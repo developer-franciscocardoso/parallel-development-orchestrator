@@ -1,0 +1,44 @@
+[
+  {
+    "id": "T001",
+    "role": "backend",
+    "brief": "Include the plan excerpt, API contract and source paths.",
+    "dependencies": [],
+    "owned_paths": [
+      "src/api"
+    ],
+    "excluded_paths": [
+      "src/api/shared"
+    ],
+    "acceptance_criteria": [
+      "Describe the observable success condition."
+    ],
+    "verification_commands": [
+      "Replace with the repository's focused test command."
+    ],
+    "token_reservation": 20000,
+    "timeout_seconds": 1800,
+    "model": "",
+    "effort": "medium"
+  },
+  {
+    "id": "T002",
+    "role": "frontend",
+    "brief": "Include the independent UI scope, contract and source paths.",
+    "dependencies": [],
+    "owned_paths": [
+      "src/ui"
+    ],
+    "excluded_paths": [],
+    "acceptance_criteria": [
+      "Describe the observable UI condition."
+    ],
+    "verification_commands": [
+      "Replace with the relevant UI checks."
+    ],
+    "token_reservation": 20000,
+    "timeout_seconds": 1800,
+    "model": "",
+    "effort": "medium"
+  }
+]
