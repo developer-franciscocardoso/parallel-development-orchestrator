@@ -27,8 +27,15 @@ public sealed record ProjectInfo(string Id, string Root);
 public sealed record PlanInfo(string Id, string ProjectId, long TokenBudget);
 public sealed record Artifact<T>(string Id, T Data, long Version);
 
+public interface IWorkerIdentity
+{
+    public const string ArtifactKind = "worker";
+    string AttemptId { get; }
+}
+
 public interface IStateStore
 {
+    IDisposable AcquireStartupGuard();
     void RegisterProject(string id, string repository);
     IReadOnlyList<ProjectInfo> Projects();
     IReadOnlyList<PlanInfo> Plans();

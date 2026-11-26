@@ -8,9 +8,11 @@ public sealed class RecoveryService(IStateStore store,
 {
     public IReadOnlyList<Attempt> Recover(string planId)
     {
+        using var guard = store.AcquireStartupGuard();
+        var attempts = store.Attempts(planId);
         var workers = store.Artifacts<WorkerRecord>(planId,
             WorkerRecord.ArtifactKind).ToDictionary(a => a.Id, a => a.Data);
-        return store.Attempts(planId)
+        return attempts
             .Select(a => RecoverAttempt(a, workers.GetValueOrDefault(a.Id)))
             .ToArray();
     }
@@ -19,6 +21,7 @@ public sealed class RecoveryService(IStateStore store,
     {
         if (attempt.State is not (AttemptState.Reserved or
             AttemptState.Running)) return attempt;
+        if (worker != null) ValidateBinding(attempt, worker);
         var observation = worker is null
             ? new WorkerObservation(TreeCondition.Unknown, false,
                 "Startup interrupted before durable process identity.")
@@ -31,17 +34,25 @@ public sealed class RecoveryService(IStateStore store,
             AttemptState.Interrupted, JsonSerializer.Serialize(observation));
     }
 
+    private static void ValidateBinding(Attempt attempt, WorkerRecord worker)
+    {
+        if (worker.AttemptId != attempt.Id)
+            throw new InvalidDataException("Worker identity mismatch.");
+    }
+
     public Attempt Reconcile(string planId, string attemptId,
         long measuredTokens, string usageEvidence)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(measuredTokens);
         ArgumentException.ThrowIfNullOrWhiteSpace(usageEvidence);
+        using var guard = store.AcquireStartupGuard();
         var attempt = store.Attempts(planId).Single(a => a.Id == attemptId);
         var worker = store.Artifacts<WorkerRecord>(planId,
             WorkerRecord.ArtifactKind).SingleOrDefault(a => a.Id == attemptId);
         if (worker is null)
             throw new InvalidOperationException(
                 "Missing identity requires external process reconciliation.");
+        ValidateBinding(attempt, worker.Data);
         var observation = inspector.Inspect(worker.Data);
         if (observation.Tree != TreeCondition.Stopped)
             throw new InvalidOperationException("Process tree is unresolved.");
@@ -53,8 +64,6 @@ public sealed class RecoveryService(IStateStore store,
         {
             observation, usageEvidence, measuredTokens
         });
-        if (attempt.State == AttemptState.Failed &&
-            attempt.UsedTokens == measuredTokens) return attempt;
         return store.Reconcile(attempt.Id, attempt.Version, evidence,
             measuredTokens, confirmedStopped: true);
     }

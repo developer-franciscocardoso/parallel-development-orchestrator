@@ -8,6 +8,11 @@ public sealed partial class StateStore(string path) : IStateStore
 {
     private readonly Database database = new(path);
 
+    private readonly string guardPath = Path.GetFullPath(path) + ".startup.lock";
+
+    public IDisposable AcquireStartupGuard() => new FileStream(guardPath,
+        FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
     public void CreatePlan(string projectId, string repository, string planId,
         IReadOnlyList<TaskContract> tasks, long tokenBudget)
     {
