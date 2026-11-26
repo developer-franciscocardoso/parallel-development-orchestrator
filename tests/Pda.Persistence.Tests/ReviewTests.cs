@@ -10,7 +10,7 @@ public sealed class ReviewTests : IDisposable
     public void Dispose() => root.Delete(true);
 
     private void Create(StateStore db, string id) =>
-        db.CreatePlan(id, At(id), id, [new TaskContract(id, "work", [],
+        db.CreatePlan(id, Directory.CreateDirectory(At(id)).FullName, id, [new TaskContract(id, "work", [],
             ["same/path"], [], [], ["ok"], [new("test", [])], ["file"],
             Risk.Low, 1, 60, 0, "sim", 1)], 1);
 

@@ -19,11 +19,7 @@ public sealed partial class StateStore(string path) : IStateStore
         var root = RepositoryRoot(repository);
         using var db = database.Open();
         using var tx = db.BeginTransaction(deferred: false);
-        db.Execute("INSERT INTO projects VALUES($p0,$p1) ON CONFLICT(id) DO NOTHING",
-            tx, projectId, root);
-        if (db.Number("SELECT count(*) FROM projects WHERE id=$p0 AND root=$p1",
-            tx, projectId, root) != 1)
-            throw new InvalidOperationException("Project root mismatch.");
+        EnsureProject(db, tx, projectId, root);
         db.Execute("INSERT INTO plans VALUES($p0,$p1,$p2)", tx, planId,
             projectId, tokenBudget);
         foreach (var task in tasks)

@@ -75,3 +75,9 @@ Evidence remains in the global journal. It is a trusted operator interface.
 Schema version 2 upgrades existing archives and applies quarantine to existing
 imported summaries. Open, backup and restore compare schema objects against
 the exact supported definitions, including constraints, indexes and triggers.
+
+Registration and plan creation require an existing directory. They reject
+nested registered roots and reparse points anywhere in the root's ancestry.
+Admission and transition to Running repeat the checks, including for
+projects registered by older versions. Scoped concurrency by canonical Git
+common-directory identity remains a repository-service improvement.

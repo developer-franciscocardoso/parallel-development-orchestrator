@@ -23,6 +23,7 @@ public sealed partial class StateStore
             db.Number("SELECT requested_limit FROM attempts WHERE request=$p0",
                 tx, requestKey) != concurrency))
             throw new InvalidOperationException("Conflicting reservation key.");
+        CheckPlanRoot(db, tx, planId);
         if (prior != null) return prior;
         var task = db.Read("SELECT contract FROM tasks WHERE plan=$p0 AND id=$p1",
             r => JsonSerializer.Deserialize<TaskContract>(r.GetString(0))!,
@@ -84,6 +85,7 @@ public sealed partial class StateStore
         using var db = database.Open();
         using var tx = db.BeginTransaction(deferred: false);
         var current = db.Read(Fields + "WHERE id=$p0", Map, tx, attemptId).Single();
+        if (state == AttemptState.Running) CheckPlanRoot(db, tx, current.PlanId);
         if (state == AttemptState.Running && UnresolvedLegacy(db, tx))
             throw new InvalidOperationException("Unresolved legacy execution.");
         if (current.Version != expectedVersion)

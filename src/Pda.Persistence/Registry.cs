@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using System.Text.Json;
 using Pda.Core;
 
@@ -12,17 +13,57 @@ public sealed partial class StateStore
         var root = RepositoryRoot(repository);
         using var db = database.Open();
         using var tx = db.BeginTransaction(deferred: false);
-        var fresh = db.Number("SELECT count(*) FROM projects WHERE id=$p0", tx, id) == 0;
-        db.Execute("INSERT INTO projects VALUES($p0,$p1) ON CONFLICT(id) DO NOTHING",
-            tx, id, root);
-        if (db.Number("SELECT count(*) FROM projects WHERE id=$p0 AND root=$p1",
-            tx, id, root) != 1)
-            throw new InvalidOperationException("Project root mismatch.");
-        if (fresh) Append(db, tx, null, null, null, "ProjectRegistered",
-            JsonSerializer.Serialize(new ProjectInfo(id, root)));
+        EnsureProject(db, tx, id, root);
         tx.Commit();
     }
 
+    private static void EnsureProject(SqliteConnection db, SqliteTransaction tx,
+        string id, string root)
+    {
+        CheckRootOwnership(db, tx, id, root);
+        var prior = db.Read("SELECT root FROM projects WHERE id=$p0",
+            r => r.GetString(0), tx, id).SingleOrDefault();
+        if (prior == root) return;
+        if (prior != null) throw new InvalidOperationException("Project root mismatch.");
+        db.Execute("INSERT INTO projects VALUES($p0,$p1)", tx, id, root);
+        Append(db, tx, null, null, null, "ProjectRegistered",
+            JsonSerializer.Serialize(new ProjectInfo(id, root)));
+    }
+
+    private static void CheckRootOwnership(SqliteConnection db,
+        SqliteTransaction tx, string id, string root)
+    {
+        var directory = new DirectoryInfo(root);
+        if (!directory.Exists) throw new DirectoryNotFoundException(root);
+        for (var current = directory; current != null; current = current.Parent)
+            if ((current.Attributes & FileAttributes.ReparsePoint) != 0)
+                throw new InvalidOperationException("Linked project root.");
+
+        var others = db.Read("SELECT root FROM projects WHERE id<>$p0",
+            r => r.GetString(0), tx, id);
+        foreach (var other in others)
+            if (ContainsRoot(other, root) || ContainsRoot(root, other))
+                throw new InvalidOperationException("Overlapping project roots.");
+    }
+
+    private static bool ContainsRoot(string parent, string path)
+    {
+        var relative = Path.GetRelativePath(parent, path);
+        return !Path.IsPathRooted(relative) && relative != ".." &&
+            !relative.StartsWith(".." + Path.DirectorySeparatorChar,
+                StringComparison.Ordinal);
+    }
+
+    private static void CheckPlanRoot(SqliteConnection db,
+        SqliteTransaction tx, string plan)
+    {
+        var project = db.Read("""
+            SELECT projects.id,root FROM projects JOIN plans
+            ON projects.id=plans.project WHERE plans.id=$p0
+            """, r => new ProjectInfo(r.GetString(0), r.GetString(1)),
+            tx, plan).Single();
+        CheckRootOwnership(db, tx, project.Id, project.Root);
+    }
     public IReadOnlyList<ProjectInfo> Projects()
     {
         using var db = database.Open();
