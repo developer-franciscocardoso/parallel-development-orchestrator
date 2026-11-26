@@ -146,7 +146,8 @@ public sealed class ProcessSupervisor : IDisposable
         => new(direction, HandleInheritability.Inheritable);
 
     private static FileStream OpenLog(string path)
-        => new(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+        => new(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read,
+            bufferSize: 1);
 
     private static void Send(Stream pipe, string input)
     {
