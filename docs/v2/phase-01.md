@@ -18,8 +18,7 @@ immediate writer transactions. Open one StateStore per service or per call.
 Store the database outside worker-writable directories. Register projects,
 create plans and read task contracts through the same adapter.
 
-Reservations enforce a global six-slot ceiling, cross-plan ownership within
-a project, plan budgets, dependency integration and attempt limits.
+Reservations enforce a global six-slot ceiling, global ownership exclusions across projects, plan budgets, dependency integration and attempt limits.
 Reservation keys are replayable with matching plan, task and concurrency.
 Transition with the observed version. Evidence and the updated record commit
 together. Unknown final usage blocks new reservations in that plan. An
@@ -58,3 +57,21 @@ budget exhaustion, unknown usage, explicit retry authorization, dependency
 integration, restart, journal rollback, immutable journal triggers, online
 backup/restore and idempotent byte-preserving legacy import on Windows.
 No paid runtime, crash injection at OS power loss, or Linux run was used.
+
+## Reviewed admission and recovery boundaries
+
+All projects share a conservative path-conflict check. This may serialize
+unrelated repositories with matching paths and prevents alias paths or linked
+worktrees from bypassing an existing assignment. The validator caps plans at
+256 tasks, 32 dependencies per task, 2,048 path declarations and 1 MiB of
+text. Reachability uses iterative topological traversal and bounded bitsets.
+
+An imported active or unknown legacy attempt blocks new admissions and the
+transition to Running globally, including after restart. ReconcileLegacy takes
+the source path and digest, confirmation that the processes stopped, measured
+tokens for each unknown attempt in registry order, and supporting evidence.
+Evidence remains in the global journal. It is a trusted operator interface.
+
+Schema version 2 upgrades existing archives and applies quarantine to existing
+imported summaries. Open, backup and restore compare schema objects against
+the exact supported definitions, including constraints, indexes and triggers.

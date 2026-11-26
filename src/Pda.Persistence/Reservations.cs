@@ -50,6 +50,7 @@ public sealed partial class StateStore
     private static bool HasCapacity(SqliteConnection db, SqliteTransaction tx,
         string plan, TaskContract task, int concurrency)
     {
+        if (UnresolvedLegacy(db, tx)) return false;
         if (db.Number($"SELECT count(*) FROM attempts WHERE state IN ('Reserved','Running','AwaitingVerification','Verified','Interrupted')",
             tx) >= concurrency) return false;
         if (db.Number("""
@@ -69,11 +70,9 @@ public sealed partial class StateStore
         if (remaining < task.TokenReservation) return false;
         var siblings = db.Read($"""
             SELECT t.contract FROM attempts a JOIN tasks t
-            ON a.plan=t.plan AND a.task=t.id JOIN plans p ON a.plan=p.id
-            WHERE p.project=(SELECT project FROM plans WHERE id=$p0)
-            AND a.state IN {Active}
+            ON a.plan=t.plan AND a.task=t.id WHERE a.state IN {Active}
             """, r => JsonSerializer.Deserialize<TaskContract>(r.GetString(0))!,
-            tx, plan);
+            tx);
         return !siblings.Any(s => ContractValidator.Conflicts(task, s));
     }
 
@@ -85,6 +84,8 @@ public sealed partial class StateStore
         using var db = database.Open();
         using var tx = db.BeginTransaction(deferred: false);
         var current = db.Read(Fields + "WHERE id=$p0", Map, tx, attemptId).Single();
+        if (state == AttemptState.Running && UnresolvedLegacy(db, tx))
+            throw new InvalidOperationException("Unresolved legacy execution.");
         if (current.Version != expectedVersion)
             throw new InvalidOperationException("Stale attempt version.");
         if ((state == AttemptState.Running && usedTokens.HasValue) ||

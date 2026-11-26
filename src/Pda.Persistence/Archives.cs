@@ -64,9 +64,9 @@ public sealed partial class StateStore
         using var integrity = db.Command("PRAGMA integrity_check", null);
         if (!Equals(integrity.ExecuteScalar(), "ok") ||
             db.Number("SELECT count(*) FROM pragma_foreign_key_check", null) != 0 ||
-            db.Number("PRAGMA application_id", null) != Database.ApplicationId ||
-            db.Number("PRAGMA user_version", null) != 1)
+            db.Number("PRAGMA application_id", null) != Database.ApplicationId)
             throw new InvalidDataException("Invalid or unsupported database.");
+        Database.ValidateSchema(db, null, db.Number("PRAGMA user_version", null));
     }
 
     public IReadOnlyList<LegacyEvidence> ImportLegacy(string executionDirectory)
@@ -85,6 +85,40 @@ public sealed partial class StateStore
         return entries.Select(e => e.Evidence).ToList();
     }
 
+    private static bool UnresolvedLegacy(SqliteConnection db,
+        SqliteTransaction tx) => db.Number("""
+            SELECT EXISTS(SELECT 1 FROM legacy l
+            WHERE (json_extract(evidence,'$.ActiveAttempts') > 0 OR
+                   json_extract(evidence,'$.UnknownAttempts') > 0)
+            AND NOT EXISTS(SELECT 1 FROM legacy_reconciliations r
+                WHERE r.source=l.source AND r.hash=l.hash))
+            """, tx) != 0;
+
+    public void ReconcileLegacy(string source, string hash,
+        bool confirmedStopped, IReadOnlyList<long> measuredUnknownTokens,
+        string evidence)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(evidence);
+        ArgumentNullException.ThrowIfNull(measuredUnknownTokens);
+        using var db = database.Open();
+        using var tx = db.BeginTransaction(deferred: false);
+        var record = db.Read("""
+            SELECT evidence FROM legacy WHERE source=$p0 AND hash=$p1
+            """, r => JsonSerializer.Deserialize<LegacyEvidence>(r.GetString(0))!,
+            tx, source, hash).Single();
+        if (record.UnknownAttempts == null || !confirmedStopped ||
+            measuredUnknownTokens.Count != record.UnknownAttempts ||
+            measuredUnknownTokens.Any(n => n < 0))
+            throw new InvalidOperationException("Incomplete legacy reconciliation.");
+        var details = JsonSerializer.Serialize(new
+        {
+            source, hash, confirmedStopped, measuredUnknownTokens, evidence
+        });
+        db.Execute("INSERT INTO legacy_reconciliations VALUES($p0,$p1,$p2)",
+            tx, source, hash, details);
+        Append(db, tx, null, null, null, "LegacyReconciled", details);
+        tx.Commit();
+    }
     public IReadOnlyList<LegacyEvidence> ImportedEvidence()
     {
         using var db = database.Open();

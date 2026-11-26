@@ -27,8 +27,10 @@ internal sealed class Database
         var version = db.Number("PRAGMA user_version", tx);
         if (version > 0 && db.Number("PRAGMA application_id", tx) != ApplicationId)
             throw new InvalidDataException("Unrecognized database.");
-        if (version > 1) throw new InvalidDataException("Newer schema.");
+        if (version > 2) throw new InvalidDataException("Newer schema.");
         if (version == 0) db.Execute(Schema, tx);
+        if (version < 2) db.Execute(SecondMigration, tx);
+        ValidateSchema(db, tx, 2);
         tx.Commit();
     }
 
@@ -39,6 +41,41 @@ internal sealed class Database
         return db;
     }
 
+    private const string SecondMigration = """
+        CREATE TABLE legacy_reconciliations(
+            source TEXT NOT NULL, hash TEXT NOT NULL, evidence TEXT NOT NULL,
+            PRIMARY KEY(source,hash),
+            FOREIGN KEY(source,hash) REFERENCES legacy(source,hash));
+        PRAGMA user_version=2;
+        """;
+
+    private const string SchemaObjects = """
+        SELECT type,name,tbl_name,sql FROM sqlite_schema
+        WHERE name NOT GLOB 'sqlite_*' ORDER BY type,name
+        """;
+
+    private static readonly Lazy<string[][]> ExpectedSchemas = new(() =>
+    {
+        using var reference = new SqliteConnection("Data Source=:memory:");
+        reference.Open();
+        reference.Execute(Schema);
+        var first = ReadSchema(reference, null);
+        reference.Execute(SecondMigration);
+        return [first, ReadSchema(reference, null)];
+    });
+
+    private static string[] ReadSchema(SqliteConnection db,
+        SqliteTransaction? tx) => db.Read(SchemaObjects,
+            r => string.Join("\n", r.GetString(0), r.GetString(1),
+                r.GetString(2), r.GetString(3).ReplaceLineEndings("\n")), tx).ToArray();
+
+    internal static void ValidateSchema(SqliteConnection db,
+        SqliteTransaction? tx, long version)
+    {
+        if (version is < 1 or > 2 ||
+            !ReadSchema(db, tx).SequenceEqual(ExpectedSchemas.Value[version - 1]))
+            throw new InvalidDataException("Database schema mismatch.");
+    }
     private const string Schema = """
         CREATE TABLE projects(id TEXT PRIMARY KEY, root TEXT NOT NULL UNIQUE);
         CREATE TABLE plans(id TEXT PRIMARY KEY, project TEXT NOT NULL
