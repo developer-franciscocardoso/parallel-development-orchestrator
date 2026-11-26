@@ -60,3 +60,8 @@ These interfaces are sequential prerequisites, not parallel guesses.
 - Ruling: user explicitly authorized autonomous implementation and parallel
   isolated work, so no redundant design-approval pause is required.
 - P01 pending. All later phases pending. No V2 capability claimed complete.
+- Runtime environment finding: installed bundled Codex's Windows sandbox
+  provisioning path failed with "app runtime provisioning service is
+  unavailable; refusing helper fallback". Live secure execution requires
+  a functioning provisioning service/runtime. Do not bypass isolation.
+  Domain/persistence and deterministic simulation remain independent work.
