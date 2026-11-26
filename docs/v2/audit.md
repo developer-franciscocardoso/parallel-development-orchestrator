@@ -108,3 +108,13 @@ changing machine accounts/firewall rules. It is not yet validation of all
 read, write, network, credential and configuration boundaries. The adapter
 must explicitly select and validate this supported mode rather than rely
 on the unavailable default provisioning path.
+
+The next no-model synthetic boundary probe also passed on this host:
+workspace writes succeeded; external reads (direct and through a workspace
+junction), external writes, .git writes and loopback TCP were denied.
+The unsandboxed loopback control connected successfully first. The profile
+extended :workspace with :root=deny, :minimal=read and network.enabled=false.
+Pass the filesystem rules as one TOML inline table override; quoted dotted
+CLI key components were interpreted as literal quotes by this version.
+This does not validate effective agent integrations/MCP/plugin policy,
+credential isolation or paid Codex execution. Those remain separate gates.
