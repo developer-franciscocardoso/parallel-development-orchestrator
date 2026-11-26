@@ -20,7 +20,8 @@ internal sealed class LaunchAttributes : IDisposable
             Native.Check(Native.InitializeProcThreadAttributeList(
                 Pointer, 2, 0, ref size));
             initialized = true;
-            Add(0x20002, redirectedHandles); // PROC_THREAD_ATTRIBUTE_HANDLE_LIST
+            // PROC_THREAD_ATTRIBUTE_HANDLE_LIST
+            Add(0x20002, redirectedHandles);
             Add(0x2000D, [job]); // PROC_THREAD_ATTRIBUTE_JOB_LIST
         }
         catch

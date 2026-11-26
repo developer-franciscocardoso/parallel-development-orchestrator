@@ -113,6 +113,10 @@ internal static class Native
     internal static extern uint WaitForSingleObject(SafeFileHandle handle,
         uint milliseconds);
 
+    [DllImport("kernel32", SetLastError = true)]
+    internal static extern bool IsProcessInJob(SafeProcessHandle process,
+        SafeFileHandle job, out bool member);
+
     internal static void Check(bool ok)
     {
         if (!ok) throw new Win32Exception(Marshal.GetLastPInvokeError());

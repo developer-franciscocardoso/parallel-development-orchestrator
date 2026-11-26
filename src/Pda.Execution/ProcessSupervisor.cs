@@ -42,21 +42,23 @@ public sealed class ProcessSupervisor : IDisposable
         using var input = Pipe(PipeDirection.Out);
         using var output = Pipe(PipeDirection.In);
         using var error = Pipe(PipeDirection.In);
-        using var child = Launch.Start(request, job, name, input, output, error);
+        using var child = Launch.Start(request, job, name, input,
+            output, error);
         var stdout = DrainAsync(output, outLog, request.MaxLogBytes, interrupt);
         var stderr = DrainAsync(error, errLog, request.MaxLogBytes, interrupt);
         Task stdin = Task.CompletedTask;
         bool interrupted = false;
         try
         {
-            await onStarted(child.Identity, interrupt.Token)
+            await PersistAsync(onStarted, child.Identity, interrupt.Token)
                 .ConfigureAwait(false);
             interrupt.Token.ThrowIfCancellationRequested();
             Native.Check(Native.ResumeThread(child.Thread) != uint.MaxValue);
             stdin = Task.Run(() => Send(input, request.StandardInput));
             await child.WaitAsync(interrupt.Token).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (interrupt.IsCancellationRequested)
+        catch (OperationCanceledException)
+            when (interrupt.IsCancellationRequested)
         {
             interrupted = true;
         }
@@ -69,6 +71,27 @@ public sealed class ProcessSupervisor : IDisposable
         bool expired = interrupted && timeout.IsCancellationRequested;
         return new(child.Identity, code, expired, interrupted && !expired,
             true, stdout.Result, stderr.Result);
+    }
+
+    private static async Task PersistAsync(
+        Func<SupervisedIdentity, CancellationToken, Task> persist,
+        SupervisedIdentity identity, CancellationToken token)
+    {
+        var pending = Task.Run(() => persist(identity, token), token);
+        try
+        {
+            await pending.WaitAsync(token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            // The callback belongs to the caller and may ignore cancellation.
+            // Observe any later failure without extending the job lifetime.
+            _ = pending.ContinueWith(task => { _ = task.Exception; },
+                CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted
+                | TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+            throw;
+        }
     }
 
     private static void Validate(ProcessRequest request)
@@ -131,7 +154,8 @@ public sealed class ProcessSupervisor : IDisposable
         {
             try
             {
-                using var writer = new StreamWriter(pipe, new UTF8Encoding(false));
+                using var writer = new StreamWriter(pipe,
+                    new UTF8Encoding(false));
                 writer.Write(input);
             }
             catch (IOException ex) when ((ex.HResult & 0xffff) is 109 or 232)
@@ -186,23 +210,34 @@ public sealed class ProcessSupervisor : IDisposable
         if (!OperatingSystem.IsWindows() || identity is null
             || identity.ProcessId <= 0 || identity.JobName is null
             || !identity.JobName.StartsWith(Prefix, StringComparison.Ordinal)
-            || !Guid.TryParseExact(identity.JobName[Prefix.Length..], "N", out _))
+            || !Guid.TryParseExact(identity.JobName[Prefix.Length..],
+                "N", out _))
             return ProcessTreeState.Unknown;
         using var job = Native.OpenJobObjectW(4, false, identity.JobName);
         if (!job.IsInvalid)
         {
             try
             {
-                return Native.Active(job) > 0 ? ProcessTreeState.Live
-                    : ProcessTreeState.Stopped;
+                if (Native.Active(job) == 0) return ProcessTreeState.Stopped;
+                using var process = Process.GetProcessById(identity.ProcessId);
+                bool matches = process.StartTime.ToUniversalTime()
+                    == identity.StartedUtc.UtcDateTime;
+                Native.Check(Native.IsProcessInJob(process.SafeHandle, job,
+                    out bool member));
+                return matches && member ? ProcessTreeState.Live
+                    : ProcessTreeState.Unknown;
             }
             catch (Win32Exception) { return ProcessTreeState.Unknown; }
+            catch (ArgumentException) { return ProcessTreeState.Unknown; }
+            catch (InvalidOperationException)
+            { return ProcessTreeState.Unknown; }
         }
         if (Marshal.GetLastPInvokeError() != 2) return ProcessTreeState.Unknown;
         try
         {
             using var process = Process.GetProcessById(identity.ProcessId);
-            return process.StartTime.ToUniversalTime() == identity.StartedUtc.UtcDateTime
+            return process.StartTime.ToUniversalTime()
+                == identity.StartedUtc.UtcDateTime
                 ? ProcessTreeState.Unknown : ProcessTreeState.Stopped;
         }
         catch (ArgumentException) { return ProcessTreeState.Stopped; }

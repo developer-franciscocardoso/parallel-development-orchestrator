@@ -9,8 +9,9 @@ passed to the worker are the three redirected pipe endpoints.
 
 The callback receives the PID, kernel creation time in UTC and a unique
 session-local job name before the primary thread resumes. It must commit
-the identity before returning, honor cancellation and avoid blocking on
-the suspended worker. A failed callback terminates the suspended process.
+the identity before returning. Cancellation bounds the wait for persistence
+even if the callback ignores its token. Such a callback can finish later,
+so callers must keep late writes idempotent. A failed callback terminates the suspended process.
 Cancellation before launch throws. Cancellation or timeout during execution
 returns an outcome after checking that the job has zero active processes.
 The deadline includes persistence time. Disposal signals active runs.
@@ -41,6 +42,11 @@ network isolation require a separate sandbox.
 
 The first test build failed with CS0246 for the missing public contract.
 After implementation, 10 Windows tests passed in Debug and Release.
+During review, a timeout test for uncooperative persistence and a test
+for a mismatched live identity both failed on the original implementation.
+The fixes bound callback waiting and check both native job membership
+and root creation time before identifying the tree as live. The extended
+Release suite passed all 13 tests, including environment replacement.
 The Release command was
 `dotnet test tests/Pda.Execution.Tests -c Release --no-restore --nologo`.
 Tests run actual Windows PowerShell, ping and a separate .NET supervisor

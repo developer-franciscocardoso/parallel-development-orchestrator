@@ -160,6 +160,74 @@ public sealed class SupervisionTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task TimeoutStopsSuspendedWorkerDespiteStuckPersistence()
+    {
+        var pending = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        SupervisedIdentity? observed = null;
+        var run = supervisor.RunAsync(Request("Set-Content marker ran", 1),
+            (identity, _) =>
+            {
+                observed = identity;
+                return pending.Task;
+            });
+        try
+        {
+            var outcome = await run.WaitAsync(TimeSpan.FromSeconds(4));
+            Assert.True(outcome.TimedOut);
+            Assert.True(outcome.TreeStopped);
+            Assert.Equal(observed, outcome.Identity);
+            Assert.False(File.Exists(Path.Combine(root, "marker")));
+        }
+        finally
+        {
+            pending.SetException(new IOException("late persistence failure"));
+            try { await run; } catch (IOException) { }
+        }
+    }
+
+    [Fact]
+    public async Task ReplacementEnvironmentOmitsInheritedSecret()
+    {
+        string key = "PDA_SECRET_" + Guid.NewGuid().ToString("N");
+        Environment.SetEnvironmentVariable(key, "inherited");
+        try
+        {
+            string script = $"[Console]::Write(\"$env:{key}|$env:PDA_VALUE\")";
+            var request = Request(script) with
+            {
+                Environment = new Dictionary<string, string>
+                {
+                    ["SystemRoot"] = Environment.GetFolderPath(
+                        Environment.SpecialFolder.Windows),
+                    ["PDA_VALUE"] = "explicit"
+                }
+            };
+            await supervisor.RunAsync(request, Started);
+            Assert.Equal("|explicit",
+                File.ReadAllText(request.StandardOutputPath));
+        }
+        finally { Environment.SetEnvironmentVariable(key, null); }
+    }
+
+    [Fact]
+    public async Task MismatchedIdentityCannotReportLive()
+    {
+        var result = await supervisor.RunAsync(Request("exit 0"), (id, _) =>
+        {
+            var reused = id with { StartedUtc = id.StartedUtc.AddMinutes(-1) };
+            Assert.Equal(ProcessTreeState.Unknown,
+                ProcessSupervisor.Inspect(reused));
+            var fakeJob = id with { JobName = "arbitrary" };
+            Assert.Equal(ProcessTreeState.Unknown,
+                ProcessSupervisor.Inspect(fakeJob));
+            return Task.CompletedTask;
+        });
+        Assert.Equal(ProcessTreeState.Stopped,
+            ProcessSupervisor.Inspect(result.Identity));
+    }
+
     public void Dispose()
     {
         supervisor.Dispose();
