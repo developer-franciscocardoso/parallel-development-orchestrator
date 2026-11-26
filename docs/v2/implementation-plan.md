@@ -71,11 +71,18 @@ These interfaces are sequential prerequisites, not parallel guesses.
 - P01 ruling: global matching-path exclusion is deliberately conservative
   across unrelated projects until canonical Git identities exist. Reject
   nested and reparse roots now to prevent scope aliases.
-- P02A process and P02B Git implementation started in separate worktrees.
+- P02A process and P02B Git implemented in separate worktrees.
   P02B uses a private constrained Git process wrapper and has no dependency
   on P02A's worker supervisor, enabling independent work without shared
-  mutable source. Recovery waits for their verified contracts.
-- P03-P09 pending. No V2 end-to-end capability claimed complete.
+  mutable source. Recovery now uses their verified contracts.
+- P02 accepted at ff3a19c: 59 Release tests passed across Core (7),
+  Persistence (16), Execution (13), Repositories (12), Recovery (11).
+  The final repository replacement fix also passed the Recovery suite.
+  Real Windows job crash/timeout and Git worktree tests ran. Native MXC
+  timeout canary ran without model calls. Non-Windows supervision remains
+  explicitly unsupported, with the abstraction ready for a future adapter.
+- P03 runtime/security and provider registry dispatched independently.
+  P04-P09 pending. No V2 end-to-end capability claimed complete.
 - Runtime environment finding: installed bundled Codex's Windows sandbox
   provisioning path failed with "app runtime provisioning service is
   unavailable; refusing helper fallback". Live secure execution requires
