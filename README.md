@@ -11,3 +11,22 @@ Open a fresh Codex session in the project and ask:
 > Use $parallel-development-orchestrator to execute the plan in plan.md.
 
 See the [operations guide](.agents/skills/parallel-development-orchestrator/references/operations.md) for task registration, review, integration, and recovery.
+
+## V2 development
+
+The additive V2 implementation targets .NET 10. The legacy entry point and
+execution data remain supported and are not rewritten by V2.
+
+```powershell
+dotnet test Pda.slnx -c Release
+```
+
+The implemented foundation includes validated task contracts, transactional
+SQLite state and history, bounded reservations, backup/restore, legacy
+quarantine, Windows process-tree supervision, isolated Git worktrees,
+conservative recovery and a separate provider/model registry.
+
+V2 is not yet a complete autonomous platform. Runtime integration and later
+phases are tracked in the [execution plan](docs/v2/implementation-plan.md).
+See the [audit](docs/v2/audit.md), [architecture](docs/v2/architecture.md),
+and individual phase reports for tested behavior and limitations.
