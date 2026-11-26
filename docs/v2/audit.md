@@ -80,3 +80,31 @@ ownership admission and result checking disagree. These checks did not
 modify the repository, launch Codex or spend model tokens. The amount of
 missing usage cannot be inferred from the fixtures; only the loss of
 uncertainty is demonstrated.
+
+## Standalone sandbox readiness
+
+The coordinator executed the supported command shape without a model call:
+
+```powershell
+codex sandbox -- pwsh -NoProfile -Command "Write-Output 'pda-sandbox-canary'"
+```
+
+It exited 1 before the canary ran:
+`windows sandbox failed: app runtime provisioning service is unavailable; refusing helper fallback`
+
+This confirms that the installed bundled CLI's standalone sandbox path is
+unavailable in this session. It does not establish that every desktop
+execution path fails. No bypass flag, credentials, or paid session was used.
+
+Follow-up with explicit native MXC succeeded (exit 0, output `MXC_OK`):
+
+```powershell
+codex -c windows.sandbox=mxc sandbox --include-managed-config `
+  --permission-profile :workspace -- cmd.exe /d /c echo MXC_OK
+```
+
+This resolves basic sandbox startup without installing another runtime or
+changing machine accounts/firewall rules. It is not yet validation of all
+read, write, network, credential and configuration boundaries. The adapter
+must explicitly select and validate this supported mode rather than rely
+on the unavailable default provisioning path.

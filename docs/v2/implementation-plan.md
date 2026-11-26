@@ -65,3 +65,6 @@ These interfaces are sequential prerequisites, not parallel guesses.
   unavailable; refusing helper fallback". Live secure execution requires
   a functioning provisioning service/runtime. Do not bypass isolation.
   Domain/persistence and deterministic simulation remain independent work.
+- Follow-up resolved basic sandbox startup: explicit windows.sandbox=mxc
+  with :workspace profile ran a no-model canary successfully. Continue
+  runtime implementation; strict boundary validation remains required.
