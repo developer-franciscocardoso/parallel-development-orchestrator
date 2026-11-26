@@ -92,6 +92,12 @@ public sealed partial class StateStore
             SELECT coalesce(max(version),0) FROM artifacts
             WHERE plan=$p0 AND kind=$p1 AND id=$p2
             """, tx, plan, kind, id);
+        if (kind == IWorkerIdentity.ArtifactKind &&
+            (version != 0 || data is not IWorkerIdentity worker ||
+             worker.AttemptId != id || db.Number("""
+                 SELECT count(*) FROM attempts WHERE id=$p0 AND plan=$p1
+                 """, tx, id, plan) != 1))
+            throw new InvalidOperationException("Invalid immutable worker identity.");
         if (expectedVersion != version)
             throw new InvalidOperationException("Stale artifact version.");
         db.Execute("""
@@ -127,10 +133,17 @@ public sealed partial class StateStore
         using var db = database.Open();
         using var tx = db.BeginTransaction(deferred: false);
         var a = db.Read(Fields + "WHERE id=$p0", Map, tx, attemptId).Single();
-        if (a.Version != expectedVersion || a.State is not (AttemptState.Interrupted
+        if (a.State is not (AttemptState.Interrupted
             or AttemptState.Failed or AttemptState.Cancelled or AttemptState.Blocked)
             || a.UsedTokens != null && a.UsedTokens != usedTokens)
             throw new InvalidOperationException("Invalid reconciliation.");
+        var alreadyReconciled = db.Number("""
+            SELECT EXISTS(SELECT 1 FROM journal
+            WHERE attempt=$p0 AND kind='Reconciled')
+            """, tx, a.Id) != 0;
+        if (alreadyReconciled && a.UsedTokens == usedTokens) return a;
+        if (a.Version != expectedVersion)
+            throw new InvalidOperationException("Stale attempt version.");
         var next = a with { Version = a.Version + 1, UsedTokens = usedTokens,
             State = a.State == AttemptState.Interrupted ? AttemptState.Failed : a.State };
         db.Execute("""

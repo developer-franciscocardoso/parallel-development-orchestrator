@@ -1,11 +1,13 @@
+using Pda.Core;
+
 namespace Pda.Recovery;
 
 public sealed record WorkerRecord(string AttemptId, string Worktree,
     string Branch, string BaseCommit, int ProcessId,
     DateTimeOffset ProcessStartedUtc, string JobName,
-    string StandardOutputPath, string StandardErrorPath)
+    string StandardOutputPath, string StandardErrorPath) : IWorkerIdentity
 {
-    public const string ArtifactKind = "worker";
+    public const string ArtifactKind = IWorkerIdentity.ArtifactKind;
 }
 
 public enum TreeCondition { Unknown, Live, Stopped }
