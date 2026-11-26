@@ -63,3 +63,20 @@ Keep phase gates sequential. No paid agent calls are needed for tests.
 Parsing is not end-to-end execution. Codex 0.171.0-alpha.13.2 is installed;
 exec help exposes the required flags. Authentication and real paid execution
 have not been tested. No legacy worker was launched during this audit.
+
+## Reproduced legacy defects
+
+Controlled fixtures executed against the actual Common script confirmed:
+
+| Fixture | Actual | Required conservative result |
+| --- | --- | --- |
+| 15-token completion then truncated JSON | Known 15 | Unknown |
+| Failed turn then 15-token completion | Known 15 | Unknown |
+| Owner Src, changed src/file.cs on Windows | Denied | Consistent case rules |
+| Owner Src, changed src | Allowed | Consistent case rules |
+
+Overlap validation rejects owners Src and src/file.cs, confirming that
+ownership admission and result checking disagree. These checks did not
+modify the repository, launch Codex or spend model tokens. The amount of
+missing usage cannot be inferred from the fixtures; only the loss of
+uncertainty is demonstrated.
