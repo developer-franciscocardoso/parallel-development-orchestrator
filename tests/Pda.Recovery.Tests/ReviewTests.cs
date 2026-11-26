@@ -25,6 +25,19 @@ public sealed class ReviewTests : IDisposable
         recovery = new(store, new Inspector(TreeCondition.Stopped));
     }
 
+    [Fact]
+    public void InterfaceTypedWritePreservesCompleteWorkerIdentity()
+    {
+        IWorkerIdentity identity = worker;
+        store.PutArtifact("p", WorkerRecord.ArtifactKind, attempt.Id, identity);
+        var stored = Assert.Single(store.Artifacts<WorkerRecord>(
+            "p", WorkerRecord.ArtifactKind));
+        Assert.Equal(worker, stored.Data);
+        Assert.Throws<InvalidOperationException>(() => store.PutArtifact(
+            "p", WorkerRecord.ArtifactKind, attempt.Id, identity, stored.Version));
+        Assert.Equal(worker, Assert.Single(store.Artifacts<WorkerRecord>(
+            "p", WorkerRecord.ArtifactKind)).Data);
+    }
     [Theory]
     [InlineData(AttemptState.Failed)]
     [InlineData(AttemptState.Cancelled)]

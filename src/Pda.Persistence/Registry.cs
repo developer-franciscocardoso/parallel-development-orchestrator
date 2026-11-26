@@ -85,7 +85,9 @@ public sealed partial class StateStore
         ContractValidator.ValidateId(kind);
         ContractValidator.ValidateId(id);
         ArgumentOutOfRangeException.ThrowIfNegative(expectedVersion);
-        var json = JsonSerializer.Serialize(data);
+        var payload = kind == IWorkerIdentity.ArtifactKind && data != null
+            ? JsonSerializer.SerializeToElement(data, data.GetType())
+            : JsonSerializer.SerializeToElement(data);
         using var db = database.Open();
         using var tx = db.BeginTransaction(deferred: false);
         var version = db.Number("""
@@ -104,10 +106,11 @@ public sealed partial class StateStore
             INSERT INTO artifacts VALUES($p0,$p1,$p2,$p3,$p4)
             ON CONFLICT(plan,kind,id) DO UPDATE SET
             data=excluded.data,version=excluded.version
-            """, tx, plan, kind, id, json, checked(version + 1));
+            """, tx, plan, kind, id, payload.GetRawText(), checked(version + 1));
         var artifact = new Artifact<T>(id, data, version + 1);
         Append(db, tx, plan, null, null, "ArtifactStored",
-            JsonSerializer.Serialize(new { kind, artifact }));
+            JsonSerializer.Serialize(new { kind, artifact = new Artifact<JsonElement>(
+                id, payload, artifact.Version) }));
         tx.Commit();
         return artifact;
     }
