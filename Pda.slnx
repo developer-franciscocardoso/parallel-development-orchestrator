@@ -1,11 +1,13 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Pda.Core/Pda.Core.csproj" />
+    <Project Path="src/Pda.Execution/Pda.Execution.csproj" />
     <Project Path="src/Pda.Persistence/Pda.Persistence.csproj" />
     <Project Path="src/Pda.Recovery/Pda.Recovery.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Pda.Core.Tests/Pda.Core.Tests.csproj" />
+    <Project Path="tests/Pda.Execution.Tests/Pda.Execution.Tests.csproj" />
     <Project Path="tests/Pda.Persistence.Tests/Pda.Persistence.Tests.csproj" />
     <Project Path="tests/Pda.Recovery.Tests/Pda.Recovery.Tests.csproj" />
   </Folder>
