@@ -2,6 +2,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pda.Core\Pda.Core.csproj" />
+    <ProjectReference Include="..\Pda.Execution\Pda.Execution.csproj" />
+    <ProjectReference Include="..\Pda.Repositories\Pda.Repositories.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -24,3 +24,13 @@ Release tests exercise two independent StateStore instances sharing the
 guard, synthetic live/stopped observations, immutable identity and corrupt
 historical identity rejection, unknown startup, and replay across terminal
 states. OS process-tree and Git inspection are separate module boundaries.
+
+The local inspector now checks actual Windows job identity and Git branch,
+base ancestry and the recorded canonical common-directory identity. A clone
+with the same branch and commit cannot substitute for the original worktree.
+Dirty partial work is preserved. Real job/Git inspection tests passed.
+
+The coordinator also supervised an actual Codex native-MXC sandbox canary:
+the sandboxed script started, the three-second deadline stopped its tree,
+and no delayed marker appeared after the six-second script delay. This was
+a no-model command, not a paid Codex implementation session.
