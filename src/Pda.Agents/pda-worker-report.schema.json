@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "attempt_id", "status", "summary", "commit",
+    "criteria", "tests", "risks"],
+  "properties": {
+    "task_id": {"type":"string"},
+    "attempt_id": {"type":"string"},
+    "status": {"type":"string","enum":["completed","blocked"]},
+    "summary": {"type":"string"},
+    "commit": {"type":"string"},
+    "criteria": {"type":"array","items":{"type":"string"}},
+    "tests": {"type":"array","items":{
+      "type":"object","additionalProperties":false,
+      "required":["command","exit_code"],
+      "properties":{"command":{"type":"string"},"exit_code":{"type":"integer"}}
+    }},
+    "risks": {"type":"array","items":{"type":"string"}}
+  }
+}
