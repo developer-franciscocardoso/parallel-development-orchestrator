@@ -59,7 +59,23 @@ These interfaces are sequential prerequisites, not parallel guesses.
 - P00 complete: full text audit, ZIP comparison, zero parser errors.
 - Ruling: user explicitly authorized autonomous implementation and parallel
   isolated work, so no redundant design-approval pause is required.
-- P01 pending. All later phases pending. No V2 capability claimed complete.
+- P01 foundation integrated at 321ae2d after independent review and two
+  fix rounds. Integrated Release suite: 23 passed, zero failed/skipped.
+  Delivered contracts, SQLite transactions/journal, reservations, explicit
+  reconciliation/retry, backup/restore and legacy evidence quarantine.
+  Generic journaled artifacts hold later module records; their business
+  schemas and validation remain the owning later phase's responsibility.
+- P01 minor deferred: idempotent reservation replay currently rechecks the
+  repository path before returning the prior result. A missing repository
+  can make replay throw, but does not admit duplicate work.
+- P01 ruling: global matching-path exclusion is deliberately conservative
+  across unrelated projects until canonical Git identities exist. Reject
+  nested and reparse roots now to prevent scope aliases.
+- P02A process and P02B Git implementation started in separate worktrees.
+  P02B uses a private constrained Git process wrapper and has no dependency
+  on P02A's worker supervisor, enabling independent work without shared
+  mutable source. Recovery waits for their verified contracts.
+- P03-P09 pending. No V2 end-to-end capability claimed complete.
 - Runtime environment finding: installed bundled Codex's Windows sandbox
   provisioning path failed with "app runtime provisioning service is
   unavailable; refusing helper fallback". Live secure execution requires
