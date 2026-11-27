@@ -30,7 +30,7 @@ public sealed record DashboardData(string Section, IReadOnlyList<ProjectInfo> Pr
         if (id.Length > 0 && !plans.Any(p => p.Id == id))
             throw new KeyNotFoundException("Unknown plan.");
         var current = id.Length == 0 ? plans.FirstOrDefault()?.Id : id;
-        var selected = current is null ? null : host.Report(current);
+        var selected = current is null ? null : host.Snapshot(current);
         var doctor = section == "Diagnostics" ? host.Doctor() : null;
         return new(section, projects, plans, selected, doctor, cursor);
     }

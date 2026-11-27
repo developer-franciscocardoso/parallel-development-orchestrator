@@ -11,9 +11,11 @@ public sealed record PlanMetrics(int Attempts, int Integrated,
 public static class ExecutionAnalytics
 {
     public static PlanMetrics Measure(IStateStore store, string planId)
+        => Measure(store.Attempts(planId), store.History(planId));
+
+    public static PlanMetrics Measure(IReadOnlyList<Attempt> attempts,
+        IReadOnlyList<JournalEntry> journal)
     {
-        var attempts = store.Attempts(planId);
-        var journal = store.History(planId);
         var created = journal.FirstOrDefault(e => e.Kind == "PlanCreated");
         if (created == null) throw new KeyNotFoundException("Unknown plan.");
         var events = journal.Where(e => e.AttemptId != null)

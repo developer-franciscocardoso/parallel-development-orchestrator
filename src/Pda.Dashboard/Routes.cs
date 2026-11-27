@@ -17,6 +17,7 @@ internal static class Routes
         app.MapGet("/api/projects", () => host.Store.Projects());
         app.MapGet("/api/plans", () => host.Store.Plans());
         app.MapGet("/api/plans/{plan}", (string plan) => host.Report(plan));
+        app.MapGet("/api/plans/{plan}/summary", (string plan) => host.Snapshot(plan));
         app.MapGet("/api/doctor", () => host.Doctor());
         app.MapGet("/api/plans/{plan}/export", (HttpContext ctx, string plan) =>
         {

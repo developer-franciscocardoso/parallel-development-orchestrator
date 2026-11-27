@@ -22,6 +22,20 @@ public sealed class HostTests : IDisposable
     }
 
     [Fact]
+    public void SnapshotBoundsActivityAndPreservesMetricsAndExport()
+    {
+        var host = Open();
+        Plan(host, "one");
+        for (int i = 0; i < 105; i++)
+            host.Store.PutArtifact("one", "fixture", "record", i, i);
+        var report = host.Report("one");
+        var snapshot = host.Snapshot("one");
+        Assert.True(report.History.Count > 100);
+        Assert.Equal(report.History.TakeLast(100), snapshot.History);
+        Assert.Equal(report.Metrics, snapshot.Metrics);
+    }
+
+    [Fact]
     public void InitializationPersistsConfigAndOfflineDefault()
     {
         var host = Open();

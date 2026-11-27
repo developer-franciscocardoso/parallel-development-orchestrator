@@ -22,13 +22,23 @@ public sealed partial class OrchestratorHost
     public IReadOnlyList<JournalEntry> Events(long after, int limit,
         string? plan = null) => Store.ReadJournal(after, limit, plan);
 
-    public PlanReport Report(string plan) => new(FindPlan(plan),
-        Store.Contracts(plan), workers.Status(plan), Concurrency(plan),
-        IsCancelled(plan), Store.Artifacts<DispatchRecord>(plan, "dispatch"),
-        Store.Artifacts<ReviewReport>(plan, "review"),
-        Store.Artifacts<IntegratedChange>(plan, "integration"),
-        Store.History(plan), Store.Artifacts<QualityFailure>(plan, "quality-failure"),
-        ExecutionAnalytics.Measure(Store, plan));
+    public PlanReport Report(string plan) => ReadReport(plan, fullHistory: true);
+
+    public PlanReport Snapshot(string plan) => ReadReport(plan, fullHistory: false);
+
+    private PlanReport ReadReport(string plan, bool fullHistory)
+    {
+        var info = FindPlan(plan);
+        var status = workers.Status(plan);
+        var events = fullHistory ? Store.History(plan) : Store.RecentActivity(plan);
+        var metrics = ExecutionAnalytics.Measure(status.Attempts,
+            fullHistory ? events : Store.MetricEvents(plan));
+        return new(info, Store.Contracts(plan), status, Concurrency(plan),
+            IsCancelled(plan), Store.Artifacts<DispatchRecord>(plan, "dispatch"),
+            Store.Artifacts<ReviewReport>(plan, "review"),
+            Store.Artifacts<IntegratedChange>(plan, "integration"), events,
+            Store.Artifacts<QualityFailure>(plan, "quality-failure"), metrics);
+    }
 
     public string Export(string plan) =>
         JsonSerializer.Serialize(Report(plan), ReportJson);

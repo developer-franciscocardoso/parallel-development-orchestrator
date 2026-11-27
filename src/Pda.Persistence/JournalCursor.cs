@@ -4,6 +4,32 @@ namespace Pda.Persistence;
 
 public sealed partial class StateStore
 {
+    public IReadOnlyList<JournalEntry> RecentActivity(string plan)
+    {
+        using var db = database.Open();
+        return db.Read("""
+            SELECT seq,plan,task,attempt,kind,payload,timestamp FROM journal
+            WHERE plan=$p0 ORDER BY seq DESC LIMIT 100
+            """, MapJournal, null, plan).AsEnumerable().Reverse().ToArray();
+    }
+
+    public IReadOnlyList<JournalEntry> MetricEvents(string plan)
+    {
+        using var db = database.Open();
+        return db.Read("""
+            SELECT seq,plan,task,attempt,kind,'',timestamp FROM journal
+            WHERE plan=$p0 AND (attempt IS NOT NULL OR kind='PlanCreated'
+                OR seq=(SELECT max(seq) FROM journal WHERE plan=$p0))
+            ORDER BY seq
+            """, MapJournal, null, plan);
+    }
+
+    private static JournalEntry MapJournal(Microsoft.Data.Sqlite.SqliteDataReader r)
+        => new(r.GetInt64(0), r.IsDBNull(1) ? null : r.GetString(1),
+            r.IsDBNull(2) ? null : r.GetString(2),
+            r.IsDBNull(3) ? null : r.GetString(3), r.GetString(4),
+            r.GetString(5), DateTimeOffset.Parse(r.GetString(6)));
+
     public long LatestSequence()
     {
         using var db = database.Open();
