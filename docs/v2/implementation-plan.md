@@ -113,3 +113,11 @@ These interfaces are sequential prerequisites, not parallel guesses.
 - P08 measured dashboard history payloads and latency. Summary returns
   100 activity entries and retains full exports. The regression test
   confirms matching metrics and chronological history.
+- P08 accepted. Full native benchmark command ran with three iterations.
+  Measured p95: CLI help 252.92 ms, authenticated API 8.53 ms, journal
+  write to SSE 433.26 ms, database transition 21.87 ms and scheduling
+  61.28 ms. Two simulated workers overlapped. The fixture detected zero
+  lost events, duplicate assignments or unverified integrations. One
+  native quality-and-merge operation took 43.06 seconds. Raw results
+  are in benchmark-results.json. Windows and Ubuntu CI both passed on
+  cbfd40a. Linux coverage excludes Windows job and MXC execution.
