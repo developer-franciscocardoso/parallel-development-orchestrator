@@ -7,6 +7,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Pda.Cli.Tests" />
+    <ProjectReference Include="../Pda.Benchmarks/Pda.Benchmarks.csproj" />
+    <ProjectReference Include="../Pda.Packaging/Pda.Packaging.csproj" />
     <ProjectReference Include="../Pda.Hosting/Pda.Hosting.csproj" />
     <ProjectReference Include="../Pda.Dashboard/Pda.Dashboard.csproj" />
   </ItemGroup>

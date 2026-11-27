@@ -34,6 +34,11 @@ public static partial class CliApplication
                     Environment.NewLine + string.Join(Environment.NewLine, commands));
                 return 0;
             }
+            if (input.Name == "update")
+            {
+                Write(output, Update(input, token), compact);
+                return 0;
+            }
             if (input.Name == "restore")
             {
                 Write(output, Restore(input.Values[0], input.Values[1]), compact);
@@ -95,8 +100,7 @@ public static partial class CliApplication
                     (int)a.Number("port", 1, 65535, 7412), token);
                 return (0, new { stopped = true });
             case "benchmark":
-            case "update":
-                return (0, await CliBuiltins.Run(host, a, token));
+                return (0, await Benchmark.Run(host, a.CommandOptions(), token));
         }
         if (!host.Store.Plans().Any(p => p.Id == id))
             throw new KeyNotFoundException("Unknown plan: " + id);
