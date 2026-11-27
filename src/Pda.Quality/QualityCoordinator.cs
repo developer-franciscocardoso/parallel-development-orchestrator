@@ -130,7 +130,8 @@ public sealed partial class QualityCoordinator(IStateStore store,
             review = Save(plan, "review", id, findings);
         }
         if (review.Binding != binding || !review.Approved ||
-            string.IsNullOrWhiteSpace(review.Reviewer))
+            string.IsNullOrWhiteSpace(review.Reviewer) || review.Findings.Any(f =>
+                f.Severity.Equals("blocking", StringComparison.OrdinalIgnoreCase)))
             throw new InvalidDataException("Independent candidate review rejected.");
     }
 

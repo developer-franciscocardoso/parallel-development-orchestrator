@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Pda.Application\Pda.Application.csproj" />
     <ProjectReference Include="..\..\src\Pda.Persistence\Pda.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\Pda.Quality\Pda.Quality.csproj" />
   </ItemGroup>
 
 </Project>
