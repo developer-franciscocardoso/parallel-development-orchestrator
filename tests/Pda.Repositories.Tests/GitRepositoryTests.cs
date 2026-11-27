@@ -4,7 +4,7 @@ using Pda.Repositories;
 
 namespace Pda.Repositories.Tests;
 
-public sealed class GitRepositoryTests : IDisposable
+public sealed partial class GitRepositoryTests : IDisposable
 {
     private readonly string root = Path.Combine(Path.GetTempPath(),
         "pda git teste ç " + Guid.NewGuid().ToString("N"));
