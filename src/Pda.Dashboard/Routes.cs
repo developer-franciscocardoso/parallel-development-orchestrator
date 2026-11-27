@@ -90,7 +90,7 @@ internal static class Routes
             ctx.Response.ContentType = "text/event-stream";
             await ctx.Response.WriteAsync("retry: 1500\n\n", token);
             await ctx.Response.Body.FlushAsync(token);
-            for (var tick = 0; tick < 120; tick++)
+            for (var tick = 0; tick < 300; tick++)
             {
                 if (ctx.Items[Access.SessionKey] is DashboardSession session &&
                     sessions.Find(session.Cookie) is null) break;
@@ -103,10 +103,10 @@ internal static class Routes
                         $"id: {row.Sequence}\nevent: journal\ndata: {data}\n\n", token);
                     cursor = row.Sequence;
                 }
-                if (rows.Count == 0 && tick % 10 == 0)
+                if (rows.Count == 0 && tick % 25 == 0)
                     await ctx.Response.WriteAsync(": heartbeat\n\n", token);
                 await ctx.Response.Body.FlushAsync(token);
-                await Task.Delay(1000, token);
+                await Task.Delay(400, token);
             }
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested) {}
