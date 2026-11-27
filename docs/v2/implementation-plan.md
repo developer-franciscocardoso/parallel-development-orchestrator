@@ -100,3 +100,8 @@ These interfaces are sequential prerequisites, not parallel guesses.
   The composed application library built with zero warnings. Native Windows
   counters drive admission. Provider rate limits measure admitted workers
   and token reservations. Intra-turn provider requests are opaque.
+- P06 full-path acceptance passed at bce1acc. The simulator edited a tracked
+  file in an isolated worktree. Native MXC checked the file, mechanical
+  review examined the commit and the coordinator advanced the plan branch.
+  The user checkout retained its original contents. Focused suites passed
+  20 Git, 11 quality and 8 verification tests. No paid model was invoked.
