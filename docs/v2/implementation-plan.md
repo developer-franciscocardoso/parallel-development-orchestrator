@@ -91,3 +91,7 @@ These interfaces are sequential prerequisites, not parallel guesses.
 - Follow-up resolved basic sandbox startup: explicit windows.sandbox=mxc
   with :workspace profile ran a no-model canary successfully. Continue
   runtime implementation; strict boundary validation remains required.
+- P03 accepted at 7322854. All 110 integrated Release tests passed.
+  Native MXC canaries exercised filesystem and network boundaries and
+  supervisor termination. The isolated Codex profile needs authentication
+  before a paid end-to-end run can be verified.
