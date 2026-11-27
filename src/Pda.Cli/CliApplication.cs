@@ -34,6 +34,11 @@ public static partial class CliApplication
                     Environment.NewLine + string.Join(Environment.NewLine, commands));
                 return 0;
             }
+            if (input.Name == "restore")
+            {
+                Write(output, Restore(input.Values[0], input.Values[1]), compact);
+                return 0;
+            }
             var home = input.Option("home") ??
                 Environment.GetEnvironmentVariable("PDA_HOME") ??
                 Path.Combine(Environment.GetFolderPath(
@@ -69,6 +74,10 @@ public static partial class CliApplication
         switch (a.Name)
         {
             case "init": return (0, new { home = host.Home, initialized = true });
+            case "backup": return (0, Backup(host, id));
+            case "migrate": return (0, ImportLegacy(host, id));
+            case "migration list": return (0, host.Store.ImportedEvidence());
+            case "migration reconcile": return (0, ReconcileLegacy(host, a));
             case "doctor":
                 var diagnostics = host.Doctor();
                 return (diagnostics.Ready ? 0 : 3, diagnostics);
