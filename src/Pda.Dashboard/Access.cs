@@ -17,7 +17,7 @@ internal static class Access
         var headers = ctx.Response.Headers;
         headers.CacheControl = "no-store";
         headers["X-Content-Type-Options"] = "nosniff";
-        headers["Referrer-Policy"] = "no-referrer";
+        headers["Referrer-Policy"] = "same-origin";
         headers["X-Frame-Options"] = "DENY";
         headers["Content-Security-Policy"] = "default-src 'none'; " +
             "style-src 'self'; script-src 'self'; connect-src 'self'; " +
@@ -37,7 +37,8 @@ internal static class Access
             ctx.Response.StatusCode = 403;
             return;
         }
-        if (request.Path == "/login" || request.Path == "/dashboard.css")
+        if (request.Path == "/login" || request.Path == "/dashboard.css" ||
+            request.Path == "/favicon.ico")
         {
             await next();
             return;
