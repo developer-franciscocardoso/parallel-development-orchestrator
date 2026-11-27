@@ -65,6 +65,29 @@ public sealed class RecoveryTests : IDisposable
         Assert.NotNull(store.Reserve("plan", "task", "replacement"));
     }
 
+    [Fact]
+    public void HeldSimulationLeaseSurvivesRecoveryUntilReleased()
+    {
+        var task = store.Contracts("plan").Single() with { Runtime = "simulated" };
+        store.CreatePlan("project", folder.FullName, "sim", [task], 1000);
+        var attempt = store.Reserve("sim", "task", "sim-request")!;
+        var path = SimulationLease.FilePath(folder.FullName, attempt.Id);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        var recovery = new RecoveryService(store,
+            new Probe(TreeCondition.Unknown), folder.FullName);
+        using (var lease = File.Create(path))
+        {
+            store.PutArtifact("sim", "simulation", attempt.Id,
+                new SimulationLease(path));
+            store.Transition(attempt.Id, attempt.Version, AttemptState.Running,
+                "Simulator started");
+            Assert.Equal(AttemptState.Running, recovery.Recover("sim").Single().State);
+        }
+        Assert.Equal(AttemptState.Interrupted, recovery.Recover("sim").Single().State);
+        Assert.Equal(0, recovery.Reconcile("sim", attempt.Id, 0,
+            "No simulated usage").UsedTokens);
+    }
+
     private Attempt Start()
     {
         var attempt = store.Reserve("plan", "task", "request")!;
@@ -84,3 +107,4 @@ public sealed class RecoveryTests : IDisposable
             new(condition, true, "Synthetic external process boundary");
     }
 }
+
