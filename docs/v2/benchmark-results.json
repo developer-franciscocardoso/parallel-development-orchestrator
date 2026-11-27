@@ -1,0 +1,337 @@
+{
+  "startedUtc": "2026-11-27T09:50:29.8505434+00:00",
+  "finishedUtc": "2026-11-27T09:52:22.7438518+00:00",
+  "iterations": 3,
+  "engine": {
+    "startedUtc": "2026-11-27T09:50:34.0395407+00:00",
+    "finishedUtc": "2026-11-27T09:52:22.7423243+00:00",
+    "iterations": 3,
+    "environment": {
+      "operatingSystem": "Microsoft Windows 10.0.26300",
+      "runtime": ".NET 10.0.12",
+      "architecture": "X64",
+      "logicalProcessors": 8
+    },
+    "metrics": [
+      {
+        "name": "database.transition",
+        "unit": "ms",
+        "method": "SQLite WAL Reserved to Running",
+        "samples": [
+          18.303,
+          16.4697,
+          21.8654
+        ],
+        "unavailable": null,
+        "targetP95": 50,
+        "p50": 18.303,
+        "p95": 21.8654,
+        "withinTarget": true
+      },
+      {
+        "name": "scheduler.decision",
+        "unit": "ms",
+        "method": "Admission with a deterministic two-worker host capacity",
+        "samples": [
+          61.278,
+          46.5642,
+          48.3774
+        ],
+        "unavailable": null,
+        "targetP95": 250,
+        "p50": 48.3774,
+        "p95": 61.278,
+        "withinTarget": true
+      },
+      {
+        "name": "git.worktree",
+        "unit": "ms",
+        "method": "Create and inspect a linked Git worktree",
+        "samples": [
+          1394.6494,
+          1655.9426,
+          1534.1448
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 1534.1448,
+        "p95": 1655.9426,
+        "withinTarget": null
+      },
+      {
+        "name": "process.supervision",
+        "unit": "ms",
+        "method": "Launch and reap native where.exe help in a job",
+        "samples": [
+          60.6548,
+          59.2607,
+          62.5903
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 60.6548,
+        "p95": 62.5903,
+        "withinTarget": null
+      },
+      {
+        "name": "task.dispatch",
+        "unit": "ms",
+        "method": "Single simulated task from reserve to report",
+        "samples": [
+          4940.8008,
+          5207.5607,
+          6260.6581
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 5207.5607,
+        "p95": 6260.6581,
+        "withinTarget": null
+      },
+      {
+        "name": "recovery",
+        "unit": "ms",
+        "method": "Recover one interrupted reservation from disk",
+        "samples": [
+          37.4101,
+          26.4216,
+          31.6832
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 31.6832,
+        "p95": 37.4101,
+        "withinTarget": null
+      },
+      {
+        "name": "parallel.throughput",
+        "unit": "tasks/s",
+        "method": "Two concurrent simulated workers, including isolated worktree setup",
+        "samples": [
+          0.13946857744010546,
+          0.22527144392383838,
+          0.20248020227043276
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 0.20248020227043276,
+        "p95": 0.22527144392383838,
+        "withinTarget": null
+      },
+      {
+        "name": "parallel.peakWorkers",
+        "unit": "workers",
+        "method": "Overlapping simulator callbacks",
+        "samples": [
+          2,
+          2,
+          2
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 2,
+        "p95": 2,
+        "withinTarget": null
+      },
+      {
+        "name": "process.cpu",
+        "unit": "%",
+        "method": "Harness CPU time / wall time / logical CPUs",
+        "samples": [
+          1.3260240573060047,
+          1.4096136498946386,
+          1.3625432024588966
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 1.3625432024588966,
+        "p95": 1.4096136498946386,
+        "withinTarget": null
+      },
+      {
+        "name": "process.memory",
+        "unit": "MiB",
+        "method": "Harness working set at workload end",
+        "samples": [
+          79.7109375,
+          81.9453125,
+          80.46484375
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 80.46484375,
+        "p95": 81.9453125,
+        "withinTarget": null
+      },
+      {
+        "name": "host.cpu",
+        "unit": "%",
+        "method": "PDH system CPU sample",
+        "samples": [
+          3.86199228965326,
+          39.57363383521625,
+          22.538193919225535
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 22.538193919225535,
+        "p95": 39.57363383521625,
+        "withinTarget": null
+      },
+      {
+        "name": "host.memoryAvailable",
+        "unit": "MiB",
+        "method": "PDH available physical memory",
+        "samples": [
+          1273,
+          1079,
+          1064
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 1079,
+        "p95": 1273,
+        "withinTarget": null
+      },
+      {
+        "name": "integration.qualityAndMerge",
+        "unit": "ms",
+        "method": "One end-to-end candidate with native MXC checks and Git merge",
+        "samples": [
+          43059.9427
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 43059.9427,
+        "p95": 43059.9427,
+        "withinTarget": null
+      },
+      {
+        "name": "integration.prepare",
+        "unit": "ms",
+        "method": "Verified candidate merge preparation",
+        "samples": [
+          7215.7852
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 7215.7852,
+        "p95": 7215.7852,
+        "withinTarget": null
+      },
+      {
+        "name": "integration.advance",
+        "unit": "ms",
+        "method": "Advance plan branch to checked merge",
+        "samples": [
+          6489.368
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 6489.368,
+        "p95": 6489.368,
+        "withinTarget": null
+      },
+      {
+        "name": "invariant.lostEvents",
+        "unit": "events",
+        "method": "Compare journal before/after reopen",
+        "samples": [
+          0,
+          0,
+          0
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 0,
+        "p95": 0,
+        "withinTarget": null
+      },
+      {
+        "name": "invariant.duplicateAssignments",
+        "unit": "attempts",
+        "method": "Duplicate task assignments in two-worker fixture",
+        "samples": [
+          0,
+          0,
+          0
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 0,
+        "p95": 0,
+        "withinTarget": null
+      },
+      {
+        "name": "invariant.unverifiedIntegrations",
+        "unit": "attempts",
+        "method": "Integrated attempts missing candidate or merged regression evidence",
+        "samples": [
+          0
+        ],
+        "unavailable": null,
+        "targetP95": null,
+        "p50": 0,
+        "p95": 0,
+        "withinTarget": null
+      }
+    ]
+  },
+  "frontend": [
+    {
+      "operation": "native.help.processStartToExit",
+      "samplesMs": [
+        171.6944,
+        198.2182,
+        252.9203
+      ],
+      "p50Ms": 198.2182,
+      "p95Ms": 252.9203,
+      "targetMs": 1000,
+      "meetsTarget": true
+    },
+    {
+      "operation": "native.doctor.processStartToExit",
+      "samplesMs": [
+        431.4886,
+        338.2764,
+        520.0822
+      ],
+      "p50Ms": 431.4886,
+      "p95Ms": 520.0822,
+      "targetMs": null,
+      "meetsTarget": null
+    },
+    {
+      "operation": "http.projects.authenticatedWarmRequest",
+      "samplesMs": [
+        8.5273,
+        6.6755,
+        4.5522
+      ],
+      "p50Ms": 6.6755,
+      "p95Ms": 8.5273,
+      "targetMs": 100,
+      "meetsTarget": true
+    },
+    {
+      "operation": "dashboard.journalWriteToSseDelivery",
+      "samplesMs": [
+        433.2612,
+        410.6954,
+        408.9947
+      ],
+      "p50Ms": 410.6954,
+      "p95Ms": 433.2612,
+      "targetMs": 1000,
+      "meetsTarget": true
+    }
+  ],
+  "environment": {
+    "os": "Microsoft Windows 10.0.26300",
+    "runtime": ".NET 10.0.12",
+    "architecture": "X64",
+    "logicalProcessors": 8,
+    "clockFrequency": 10000000
+  }
+}
