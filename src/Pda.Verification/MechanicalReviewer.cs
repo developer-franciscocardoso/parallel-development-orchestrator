@@ -4,7 +4,7 @@ using Pda.Repositories;
 
 namespace Pda.Verification;
 
-public sealed class MechanicalReviewer : ICandidateReviewer
+public sealed class MechanicalReviewer(SpecialistReviews? specialists = null) : ICandidateReviewer
 {
     private const string Identity = "pda.mechanical-review.v1";
     private static readonly string[] Protected =
@@ -41,6 +41,13 @@ public sealed class MechanicalReviewer : ICandidateReviewer
                 }
                 InspectText(file.Path, snapshot.ReadText(file), findings);
                 if (findings.Count >= 64) break;
+            }
+            if (NeedsSpecialist(input.Contract) && specialists != null &&
+                findings.Count == 0)
+            {
+                var decision = specialists.Read(input.Binding);
+                Checkout.Verify(input);
+                return Task.FromResult(decision);
             }
             if (NeedsSpecialist(input.Contract))
                 findings.Add(new("blocking", input.Contract.Id,
@@ -99,3 +106,4 @@ public sealed class MechanicalReviewer : ICandidateReviewer
                 "Remove it and verify that no credential was committed."));
     }
 }
+

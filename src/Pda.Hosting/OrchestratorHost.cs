@@ -79,9 +79,13 @@ public sealed partial class OrchestratorHost
         workers = new(Store, id => runtimes[id], Reserve, workspaces.Open,
             trees, evidence);
         var git = new GitRepositoryService();
+        var reviewKeys = Path.Combine(Home, "specialist-reviews");
+        var reviewer = Directory.Exists(reviewKeys)
+            ? new MechanicalReviewer(new SpecialistReviews(reviewKeys))
+            : new MechanicalReviewer();
         Quality = new(Store, new(git.CaptureCandidate, git.PrepareMerge,
             git.AdvancePlan), profile == null ? new MissingVerifier() :
-            new SandboxedVerificationRunner(profile), new MechanicalReviewer(),
+            new SandboxedVerificationRunner(profile), reviewer,
             evidence);
         execution = new(Store, workers, Quality.ProcessAsync);
     }
@@ -109,3 +113,4 @@ public sealed partial class OrchestratorHost
         ]);
     }
 }
+

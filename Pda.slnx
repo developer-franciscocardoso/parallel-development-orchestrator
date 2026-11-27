@@ -23,6 +23,7 @@
     <Project Path="tests/Pda.Admission.Tests/Pda.Admission.Tests.csproj" />
     <Project Path="tests/Pda.Agents.Tests/Pda.Agents.Tests.csproj" />
     <Project Path="tests/Pda.Application.Tests/Pda.Application.Tests.csproj" />
+    <Project Path="tests/Pda.Benchmarks.Tests/Pda.Benchmarks.Tests.csproj" />
     <Project Path="tests/Pda.Cli.Tests/Pda.Cli.Tests.csproj" />
     <Project Path="tests/Pda.Core.Tests/Pda.Core.Tests.csproj" />
     <Project Path="tests/Pda.Dashboard.Tests/Pda.Dashboard.Tests.csproj" />
