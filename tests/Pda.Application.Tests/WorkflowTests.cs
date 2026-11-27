@@ -63,6 +63,11 @@ public sealed class WorkflowTests : IDisposable
         Assert.Equal("// new", File.ReadAllText(
             Path.Combine(record.Worktree.Path, "hello.cs")));
         Assert.NotEqual(repo, record.Worktree.Baseline.Repository.Root);
+        var metrics = ExecutionAnalytics.Measure(store, "plan");
+        Assert.Equal(13, metrics.KnownTokens);
+        Assert.Equal(0, metrics.UnknownUsageAttempts);
+        Assert.NotNull(metrics.WorkerDurationP95Ms);
+        Assert.NotNull(metrics.DispatchWaitP95Ms);
         if (!integrate) return;
         var exe = NativeSandboxFactAttribute.Executable;
         var git = new Pda.Repositories.GitRepositoryService();
@@ -113,4 +118,5 @@ public sealed class NativeSandboxFactAttribute : FactAttribute
             Skip = "Requires Windows and native Codex MXC.";
     }
 }
+
 
