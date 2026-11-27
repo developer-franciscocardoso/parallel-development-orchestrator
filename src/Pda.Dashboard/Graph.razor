@@ -1,0 +1,56 @@
+<div class="graph" tabindex="0" aria-label="Scrollable task dependency graph">
+<svg width="@Width" height="@Height" role="img"
+    aria-label="Task dependency graph; arrows point from prerequisites to dependent tasks">
+    <defs><marker id="tip" viewBox="0 0 10 10" refX="9" refY="5"
+        markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#667789" /></marker></defs>
+    @foreach (var task in Tasks)
+    {
+        var node = nodes[task.Id];
+        @foreach (var dep in task.Dependencies)
+        {
+            var parent = nodes[dep];
+            <line x1="@(parent.X + 152)" y1="@(parent.Y + 20)"
+                x2="@(node.X - 3)" y2="@(node.Y + 20)"
+                stroke="#667789" marker-end="url(#tip)" />
+        }
+    }
+    @foreach (var task in Tasks)
+    {
+        var node = nodes[task.Id];
+        <g><title>@task.Id · @task.Objective</title>
+            <rect x="@node.X" y="@node.Y" width="152" height="40" rx="5"
+                fill="#ebf2f5" stroke="#94aab5" />
+            <text x="@(node.X + 10)" y="@(node.Y + 25)" fill="#192733">
+                @(task.Id.Length > 16 ? task.Id[..15] + "…" : task.Id)</text>
+        </g>
+    }
+</svg></div>
+<details><summary>Dependency list</summary>
+    @foreach (var task in Tasks)
+    { <p><strong>@task.Id</strong> · @(task.Dependencies.Length == 0 ?
+        "No prerequisites" : string.Join(", ", task.Dependencies))</p> }
+</details>
+@code {
+    [Parameter] public IReadOnlyList<TaskContract> Tasks { get; set; } = [];
+    private Dictionary<string, (int X, int Y)> nodes = [];
+    private int Width => nodes.Values.Select(n => n.X + 172).DefaultIfEmpty(172).Max();
+    private int Height => nodes.Values.Select(n => n.Y + 60).DefaultIfEmpty(60).Max();
+
+    protected override void OnParametersSet()
+    {
+        nodes = [];
+        var contracts = Tasks.ToDictionary(t => t.Id);
+        var rows = new Dictionary<int, int>();
+        int Place(string id)
+        {
+            if (nodes.TryGetValue(id, out var known)) return (known.X - 16) / 212;
+            var rank = contracts[id].Dependencies.Select(Place).DefaultIfEmpty(-1).Max() + 1;
+            var row = rows.GetValueOrDefault(rank);
+            nodes.Add(id, (16 + rank * 212, 16 + row * 68));
+            rows[rank] = row + 1;
+            return rank;
+        }
+        foreach (var task in Tasks) Place(task.Id);
+    }
+}

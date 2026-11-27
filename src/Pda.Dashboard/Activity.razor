@@ -1,0 +1,10 @@
+<ol class="timeline">
+@foreach (var entry in Entries)
+{
+    <li><strong>@entry.Kind</strong><span>@entry.TaskId</span>
+        <time datetime="@entry.Timestamp.ToString("O")">@entry.Timestamp.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss") UTC</time></li>
+}
+</ol>
+@code {
+    [Parameter] public IEnumerable<JournalEntry> Entries { get; set; } = [];
+}
