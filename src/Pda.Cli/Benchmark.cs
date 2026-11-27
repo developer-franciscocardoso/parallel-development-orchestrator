@@ -13,12 +13,6 @@ using Pda.Security;
 
 namespace Pda.Cli;
 
-internal static partial class CliBuiltins
-{
-    static partial void RegisterBenchmark(ref CliFeature? feature) =>
-        feature = Benchmark.Run;
-}
-
 internal sealed record Timing(string Operation, double[] SamplesMs,
     double P50Ms, double P95Ms, double? TargetMs, bool? MeetsTarget)
 {
