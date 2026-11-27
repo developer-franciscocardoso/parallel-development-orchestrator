@@ -43,8 +43,8 @@ internal sealed class Arguments
         new("review list", 1, "review list PLAN"),
         new("integration list", 1, "integration list PLAN"),
         new("dashboard", 0, "dashboard [--port N]", "port"),
-        new("benchmark", 0, "benchmark [--iterations N] [--output FILE]",
-            "iterations", "output"),
+        new("benchmark", 0, "benchmark [--iterations N] [--output FILE] [--frontend-only]",
+            "iterations", "output", "frontend-only"),
         new("update", 0, "update [--package FILE] [--sha256 HEX] " +
             "[--install-dir DIR]", "package", "sha256", "install-dir")
     ];
@@ -52,7 +52,7 @@ internal sealed class Arguments
     internal string Name { get; private init; } = "";
     internal string[] Values { get; private init; } = [];
     private readonly Dictionary<string, List<string>> options = [];
-    private static readonly HashSet<string> Flags = ["help", "json", "refresh", "confirm-stopped"];
+    private static readonly HashSet<string> Flags = ["help", "json", "refresh", "confirm-stopped", "frontend-only"];
 
     internal bool Has(string name) => options.ContainsKey(name);
     internal string[] Many(string name) =>
