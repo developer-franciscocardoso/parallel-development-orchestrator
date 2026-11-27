@@ -9,7 +9,7 @@ using Pda.Verification;
 
 namespace Pda.Quality.Tests;
 
-public sealed class QualityTests : IDisposable, IVerificationRunner,
+public sealed partial class QualityTests : IDisposable, IVerificationRunner,
     ICandidateReviewer
 {
     private readonly string root = Path.Combine(Path.GetTempPath(),
@@ -31,8 +31,11 @@ public sealed class QualityTests : IDisposable, IVerificationRunner,
 
     private sealed record Profile(string Commit) : IProjectProfile;
 
-    public QualityTests()
+    public QualityTests() : this(Risk.Low, "src/feature") { }
+
+    internal QualityTests(Risk risk, string changedPath)
     {
+        contract = contract with { Risk = risk };
         var repo = Directory.CreateDirectory(Path.Combine(root, "repo")).FullName;
         var trees = Directory.CreateDirectory(Path.Combine(root, "trees")).FullName;
         evidence = Directory.CreateDirectory(Path.Combine(root, "logs")).FullName;
@@ -49,9 +52,9 @@ public sealed class QualityTests : IDisposable, IVerificationRunner,
         attempt = store.Reserve("plan", contract.Id, "request")!;
         var worker = git.PlanAttempt(baseline, trees, contract.Id, attempt.Id);
         git.CreateAttempt(worker);
-        var src = Directory.CreateDirectory(Path.Combine(worker.Path, "src"));
-        File.WriteAllText(Path.Combine(src.FullName, "feature"), "changed");
-        Git(worker.Path, "add", "src/feature");
+        Directory.CreateDirectory(Path.Combine(worker.Path, "src"));
+        File.WriteAllText(Path.Combine(worker.Path, changedPath), "changed");
+        Git(worker.Path, "add", changedPath);
         Git(worker.Path, "commit", "-m", "candidate");
         var head = git.Register(worker.Path);
         candidate = new(worker, head.Commit, git.ChangedPaths(head.Repository,
