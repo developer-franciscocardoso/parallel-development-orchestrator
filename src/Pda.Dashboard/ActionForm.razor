@@ -1,0 +1,24 @@
+<form method="post" action="/control" class="action">
+    <input type="hidden" name="csrf" value="@Csrf" />
+    <input type="hidden" name="section" value="@Section" />
+    <input type="hidden" name="action" value="@Action" />
+    <input type="hidden" name="plan" value="@Plan" />
+    @if (Attempt is not null)
+    { <input type="hidden" name="attempt" value="@Attempt" /> }
+    @if (Action == "concurrency")
+    { <label>Concurrent workers <input type="number" name="concurrency"
+          min="1" max="6" value="@Concurrency" required /></label> }
+    @if (Action == "retry")
+    { <label>Retry reason <input name="reason" maxlength="1000" required /></label> }
+    <button type="submit" class="@(Action.StartsWith("cancel") ? "danger" : "secondary")">
+        @Label</button>
+</form>
+@code {
+    [Parameter] public string Action { get; set; } = "";
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Plan { get; set; } = "";
+    [Parameter] public string Section { get; set; } = "";
+    [Parameter] public string Csrf { get; set; } = "";
+    [Parameter] public string? Attempt { get; set; }
+    [Parameter] public int Concurrency { get; set; }
+}

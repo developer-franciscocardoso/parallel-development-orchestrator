@@ -1,0 +1,144 @@
+@if (Section == "Overview")
+{
+    <h2>Plan summary</h2>
+    <div class="metrics">
+        <div><span>Tasks</span><strong>@Report.Tasks.Count</strong></div>
+        <div><span>Active workers</span><strong>@Active</strong></div>
+        <div><span>Integrated</span><strong>@Report.Metrics.Integrated</strong></div>
+        <div><span>Known tokens</span><strong>@Report.Metrics.KnownTokens.ToString("N0")</strong></div>
+    </div>
+    <div class="card"><h2>Execution progress</h2>
+        <p>@Report.Metrics.Integrated of @Report.Tasks.Count tasks integrated</p>
+        <progress value="@Report.Metrics.Integrated" max="@Math.Max(1, Report.Tasks.Count)">
+            @Report.Metrics.Integrated</progress>
+        <p><strong>@State</strong> · @Report.Concurrency concurrent workers permitted</p>
+        @if (Report.Metrics.UnknownUsageAttempts > 0)
+        { <p>@Report.Metrics.UnknownUsageAttempts attempts have unknown token usage.</p> }
+    </div>
+    <h2>Recent activity</h2><Activity Entries="Report.History.TakeLast(8).Reverse()" />
+}
+else if (Section == "Executions")
+{
+    <h2>Execution controls</h2><p>Current state: <strong>@State</strong></p>
+    @if (!Report.Cancelled)
+    {
+        <div class="controls">
+            <ActionForm Action="@(Report.Status.Paused ? "resume" : "pause")"
+                Label="@(Report.Status.Paused ? "Resume execution" : "Pause execution")"
+                Plan="@Id" Section="@Section" Csrf="@Csrf" />
+            <ActionForm Action="cancel-plan" Label="Cancel plan" Plan="@Id"
+                Section="@Section" Csrf="@Csrf" />
+        </div>
+    }
+    <h2>Execution history</h2><Activity Entries="Report.History.TakeLast(100).Reverse()" />
+}
+else if (Section == "Tasks")
+{
+    <h2>Task contracts</h2>
+    @foreach (var task in Report.Tasks)
+    {
+        <details data-key="@task.Id"><summary>@task.Id <span>@task.Objective</span></summary>
+            <dl>
+            <dt>Priority / risk</dt><dd>@task.Priority / @task.Risk</dd>
+            <dt>Runtime</dt><dd>@task.Runtime</dd>
+            <dt>Owned paths</dt><dd>@List(task.Owned)</dd>
+            <dt>Read-only paths</dt><dd>@List(task.ReadOnly)</dd>
+            <dt>Excluded paths</dt><dd>@List(task.Excluded)</dd>
+            <dt>Dependencies</dt><dd>@List(task.Dependencies)</dd>
+            <dt>Acceptance criteria</dt><dd>@List(task.Criteria)</dd>
+            <dt>Deliverables</dt><dd>@List(task.Deliverables)</dd>
+            <dt>Limits</dt><dd>@task.MaxAttempts attempts · @task.TimeoutSeconds seconds ·
+                @task.TokenReservation reserved tokens</dd>
+            </dl>
+            <h3>Verification commands</h3>
+            @foreach (var check in task.Verification)
+            { <code>@check.Executable @List(check.Arguments, " ")</code> }
+        </details>
+    }
+}
+else if (Section == "Workers")
+{
+    <h2>Worker attempts</h2>
+    @if (Report.Status.Attempts.Count == 0) { <p>No workers have started.</p> }
+    @foreach (var attempt in Report.Status.Attempts)
+    {
+        var worker = Report.Workers.FirstOrDefault(w => w.Id == attempt.Id)?.Data;
+        <article><div><strong>@attempt.TaskId</strong> <span class="state">@attempt.State</span></div>
+            <code>@attempt.Id</code>
+            <p>@(worker?.Runtime ?? "Unassigned") · @(worker?.Model ?? "No model assigned")</p>
+            @if (attempt.State is AttemptState.Running or AttemptState.Reserved)
+            { <ActionForm Action="cancel-worker" Label="Cancel worker" Attempt="@attempt.Id"
+                 Plan="@Id" Section="@Section" Csrf="@Csrf" /> }
+            @if (attempt.State is AttemptState.Failed or AttemptState.Cancelled or AttemptState.Blocked)
+            { <ActionForm Action="retry" Label="Authorize retry" Attempt="@attempt.Id"
+                Plan="@Id" Section="@Section" Csrf="@Csrf" /> }
+        </article>
+    }
+}
+else if (Section == "Dependency graphs")
+{
+    <h2>Task dependencies</h2><Graph Tasks="Report.Tasks" />
+}
+else if (Section == "Quality")
+{
+    <h2>Independent reviews</h2>
+    @if (Report.Reviews.Count == 0) { <p>No reviews have been recorded.</p> }
+    @foreach (var review in Report.Reviews)
+    {
+        <article><strong>@review.Data.Reviewer · @(review.Data.Approved ? "Approved" : "Rejected")</strong>
+            <code>@review.Data.Binding.CandidateCommit</code>
+            @foreach (var item in review.Data.Findings)
+            { <p><b>@item.Severity · @item.Location</b><br />@item.Impact<br />@item.Verification</p> }
+        </article>
+    }
+    <h2>Gate failures</h2>
+    @if (Report.Failures.Count == 0) { <p>No failures recorded.</p> }
+    @foreach (var failure in Report.Failures)
+    { <article><b>@failure.Data.Stage</b><p>@failure.Data.Detail</p><p>@failure.Data.Resolution</p></article> }
+}
+else if (Section == "Integration")
+{
+    <h2>Integrated changes</h2>
+    @if (Report.Integrations.Count == 0) { <p>No verified changes have been integrated.</p> }
+    @foreach (var item in Report.Integrations)
+    { <article><strong>@item.Data.Branch</strong><code>@item.Data.Commit</code>
+        <dl><dt>Candidate</dt><dd>@item.Data.CandidateCommit</dd><dt>Previous head</dt>
+            <dd>@item.Data.PreviousHead</dd></dl></article> }
+}
+else if (Section == "Analytics")
+{
+    <h2>Measured execution metrics</h2>
+    <dl><dt>Integrated tasks per minute</dt><dd>@Metric(Report.Metrics.IntegratedPerMinute)</dd>
+        <dt>Mean active workers</dt><dd>@Metric(Report.Metrics.AverageActiveWorkers)</dd>
+        <dt>Dispatch wait · p95 (ms)</dt><dd>@Metric(Report.Metrics.DispatchWaitP95Ms)</dd>
+        <dt>Worker duration · p95 (ms)</dt><dd>@Metric(Report.Metrics.WorkerDurationP95Ms)</dd>
+        <dt>Elapsed seconds</dt><dd>@Metric(Report.Metrics.ElapsedSeconds)</dd>
+        <dt>Known tokens</dt><dd>@Report.Metrics.KnownTokens</dd>
+        <dt>Unknown-usage attempts</dt><dd>@Report.Metrics.UnknownUsageAttempts</dd>
+        <dt>Interrupted attempts</dt><dd>@Report.Metrics.InterruptedAttempts</dd></dl>
+    <a class="button" href="@("/api/plans/" + Uri.EscapeDataString(Id) + "/export")">Export JSON report</a>
+}
+else if (Section == "Configuration")
+{
+    <h2>Plan configuration</h2>
+    <dl><dt>Project</dt><dd>@Report.Plan.ProjectId</dd>
+        <dt>Token budget</dt><dd>@Report.Plan.TokenBudget</dd>
+        <dt>Pinned baseline</dt><dd>@(Report.Plan.BaselineCommit ?? "Unavailable")</dd>
+        <dt>Profile version</dt><dd>@(Report.Plan.ProfileVersion?.ToString() ?? "Unavailable")</dd></dl>
+    <ActionForm Action="concurrency" Label="Save concurrency" Plan="@Id"
+        Section="@Section" Csrf="@Csrf" Concurrency="Report.Concurrency" />
+}
+@code {
+    [Parameter, EditorRequired] public PlanReport Report { get; set; } = null!;
+    [Parameter] public string Section { get; set; } = "";
+    [Parameter] public string Csrf { get; set; } = "";
+    private string Id => Report.Plan.Id;
+    private string State => Report.Cancelled ? "Cancelled" :
+        Report.Status.Paused ? "Paused" : "Enabled";
+    private int Active => Report.Status.Attempts.Count(a =>
+        a.State is AttemptState.Running or AttemptState.Reserved);
+    private static string List(string[] values, string separator = ", ") =>
+        values.Length == 0 ? "None" : string.Join(separator, values);
+    private static string Metric(double? number) => number?.ToString("N2") ??
+        "Insufficient data";
+}
