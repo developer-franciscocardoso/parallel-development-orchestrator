@@ -1,5 +1,6 @@
 <div class="graph" tabindex="0" aria-label="Scrollable task dependency graph">
-<svg width="@Width" height="@Height" role="img"
+<svg width="@Width" height="@Height" viewBox="@("0 0 " + Width + " " + Height)"
+    class="@(Width < 620 ? "compact" : "")" role="img"
     aria-label="Task dependency graph; arrows point from prerequisites to dependent tasks">
     <defs><marker id="tip" viewBox="0 0 10 10" refX="9" refY="5"
         markerWidth="7" markerHeight="7" orient="auto-start-reverse">

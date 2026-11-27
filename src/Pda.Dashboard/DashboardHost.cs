@@ -1,5 +1,5 @@
 using System.Net;
-using System.Reflection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -21,9 +21,7 @@ public static class DashboardHost
         var secret = Environment.GetEnvironmentVariable("PDA_DASHBOARD_TOKEN");
         await using var app = Create(host, port, secret ?? "");
         await app.StartAsync(token);
-        try { await Task.Delay(Timeout.Infinite, token); }
-        catch (OperationCanceledException) when (token.IsCancellationRequested) {}
-        finally { await app.StopAsync(CancellationToken.None); }
+        await app.WaitForShutdownAsync(token);
     }
 
     internal static WebApplication Create(OrchestratorHost host, int port,
@@ -59,6 +57,7 @@ public static class DashboardHost
         app.MapGet("/dashboard.css", () => Asset("dashboard.css", "text/css"));
         app.MapGet("/dashboard.js", () =>
             Asset("dashboard.js", "text/javascript"));
+        app.MapGet("/favicon.ico", () => Results.NoContent());
         app.MapGet("/login", () => new RazorComponentResult<Login>());
         app.MapPost("/login", async (HttpContext ctx) =>
         {
