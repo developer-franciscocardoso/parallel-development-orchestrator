@@ -45,14 +45,20 @@ internal sealed class Arguments
         new("dashboard", 0, "dashboard [--port N]", "port"),
         new("benchmark", 0, "benchmark [--iterations N] [--output FILE] [--frontend-only]",
             "iterations", "output", "frontend-only"),
-        new("update", 0, "update [--package FILE] [--sha256 HEX] " +
-            "[--install-dir DIR]", "package", "sha256", "install-dir")
+        new("update", 0, "update --install-dir DIR " +
+            "(--package ZIP --sha256 HEX | --rollback | --status)",
+            "package", "sha256", "install-dir", "rollback", "status")
     ];
 
     internal string Name { get; private init; } = "";
     internal string[] Values { get; private init; } = [];
     private readonly Dictionary<string, List<string>> options = [];
-    private static readonly HashSet<string> Flags = ["help", "json", "refresh", "confirm-stopped", "frontend-only"];
+    private static readonly HashSet<string> Flags = ["help", "json", "refresh",
+        "confirm-stopped", "frontend-only", "rollback", "status"];
+
+    internal IReadOnlyDictionary<string, string> CommandOptions() =>
+        Commands.Single(c => c.Name == Name).Options.Where(Has)
+            .ToDictionary(key => key, Required);
 
     internal bool Has(string name) => options.ContainsKey(name);
     internal string[] Many(string name) =>
