@@ -95,3 +95,4 @@ These interfaces are sequential prerequisites, not parallel guesses.
   Native MXC canaries exercised filesystem and network boundaries and
   supervisor termination. The isolated Codex profile needs authentication
   before a paid end-to-end run can be verified.
+- P04 accepted at 6e3fc82. All 122 integrated Release tests passed on Windows.
