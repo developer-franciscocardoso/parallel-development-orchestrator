@@ -45,7 +45,7 @@ public static class Runner
         d.Define("scheduler.decision", "ms",
             "Admission with a deterministic two-worker host capacity", 250);
         d.Define("git.worktree", "ms", "Create and inspect a linked Git worktree");
-        d.Define("process.supervision", "ms", "Launch and reap cmd.exe in a job");
+        d.Define("process.supervision", "ms", "Launch and reap native where.exe help in a job");
         d.Define("task.dispatch", "ms", "Single simulated task from reserve to report");
         d.Define("recovery", "ms", "Recover one interrupted reservation from disk");
         d.Define("parallel.throughput", "tasks/s",
@@ -63,7 +63,7 @@ public static class Runner
         d.Define("invariant.duplicateAssignments", "attempts",
             "Duplicate task assignments in two-worker fixture");
         d.Define("invariant.unverifiedIntegrations", "attempts",
-            "Integrated attempts without persisted candidate review and checks");
+            "Integrated attempts missing candidate or merged regression evidence");
         return d;
     }
 }

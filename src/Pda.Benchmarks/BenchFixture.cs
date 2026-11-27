@@ -91,13 +91,13 @@ internal sealed partial class BenchFixture : IDisposable
         using var owner = new ProcessSupervisor();
         var start = Stopwatch.GetTimestamp();
         var result = await owner.RunAsync(new(
-            Path.Combine(Environment.SystemDirectory, "cmd.exe"),
-            ["/d", "/c", "exit", "0"], Repo, Path.Combine(Logs, "native.out"),
+            Path.Combine(Environment.SystemDirectory, "where.exe"),
+            ["/?"], Repo, Path.Combine(Logs, "native.out"),
             Path.Combine(Logs, "native.err"), TimeSpan.FromSeconds(20)),
             (_, _) => Task.CompletedTask, token);
         token.ThrowIfCancellationRequested();
         if (result.ExitCode != 0 || !result.TreeStopped || result.TimedOut)
-            throw new InvalidDataException("Supervised fixture failed.");
+            throw new InvalidDataException($"Supervised fixture exited {result.ExitCode}, timeout {result.TimedOut}.");
         data.Elapsed("process.supervision", start);
     }
 
