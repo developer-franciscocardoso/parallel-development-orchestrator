@@ -121,3 +121,10 @@ These interfaces are sequential prerequisites, not parallel guesses.
   native quality-and-merge operation took 43.06 seconds. Raw results
   are in benchmark-results.json. Windows and Ubuntu CI both passed on
   cbfd40a. Linux coverage excludes Windows job and MXC execution.
+- P09 accepted using the install/upgrade/rollback smoke and separate final
+  preview installation. The Windows x64 2.0.0-preview.1 ZIP was built
+  from 1a55688. It is 46,426,803 bytes; the independently checked archive
+  SHA-256 is 6792a4d1e714b8600a47eefc882b8933fec2143716bee7d96462e6f08c81ef26.
+  The installed stable launcher returned ready from doctor and the exact
+  version and digest from update --status. The final acceptance report
+  records the scope and verification boundaries.

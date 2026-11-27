@@ -59,3 +59,21 @@ operator is responsible for authenticating reviewers and protecting
 those keys. Hardware, repository size, available tooling and the tasks
 being executed affect observed timings.
 
+
+## Downloadable preview provenance
+
+The self-contained Windows x64 preview was built from commit
+`1a55688dca7c83e8ca33b3a42892d2ac52c1b832`. The archive was installed
+into a new directory. The installed launcher passed `doctor --json` and
+reported the expected version and package digest through `update --status`.
+
+| Artifact | Size | SHA-256 |
+| --- | ---: | --- |
+| pda-2.0.0-preview.1-win-x64.zip | 46,426,803 bytes | `6792a4d1e714b8600a47eefc882b8933fec2143716bee7d96462e6f08c81ef26` |
+| Install-Pda.ps1 | 8,080 bytes | `2bb1c22228710d2e4283a6ca83c1cf957fa843e598b918b628eca0a60a37ff57` |
+
+The local release suite and the hosted jobs use different capabilities.
+Windows MXC tests require a compatible executable. Hosted runners
+without it report those cases as skipped. The Windows development host
+ran the actual native sandbox tests. The [code-level CI run](https://github.com/developer-franciscocardoso/parallel-development-orchestrator/actions/runs/45978418489)
+is attached to the exact source revision used for the archive.
