@@ -213,6 +213,8 @@ public sealed partial class GitRepositoryService
 
     private static bool UnsafeConfig(string key)
         => key.StartsWith("filter.", StringComparison.OrdinalIgnoreCase) ||
+           key.StartsWith("merge.", StringComparison.OrdinalIgnoreCase) &&
+               key.EndsWith(".driver", StringComparison.OrdinalIgnoreCase) ||
            key.StartsWith("include.", StringComparison.OrdinalIgnoreCase) ||
            key.StartsWith("includeif.", StringComparison.OrdinalIgnoreCase) ||
            key.Equals("core.worktree", StringComparison.OrdinalIgnoreCase);
