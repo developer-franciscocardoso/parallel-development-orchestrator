@@ -5,7 +5,8 @@ namespace Pda.Security;
 
 public sealed record CodexProfile(string Executable, string Home,
     IReadOnlyList<string>? ToolDirectories = null,
-    IReadOnlyList<string>? ReadOnlyDirectories = null);
+    IReadOnlyList<string>? ReadOnlyDirectories = null,
+    Uri? OpenAiEndpoint = null);
 
 public sealed record PolicyContext(string Executable, string BinarySha256,
     string Version, string Home, string Worktree, IReadOnlyList<string> Args,
@@ -74,13 +75,27 @@ public static class CodexPolicy
         string paths = JsonSerializer.Serialize(env["PATH"]);
         string project = JsonSerializer.Serialize(tree);
         var options = Options.Where(s => !s.StartsWith("permissions.pda.filesystem="));
-        return options.Concat([
+        return options.Concat(ProviderOptions(profile)).Concat([
             $"permissions.pda.filesystem={{{fs}}}",
             $"shell_environment_policy.set={{SYSTEMROOT={win},PATH={paths}}}",
             "projects={" + project + "={trust_level=\"untrusted\"}}"
         ]).SelectMany(s => new[] { "-c", s }).ToArray();
     }
 
+    public static IReadOnlyList<string> ProviderOptions(CodexProfile profile)
+    {
+        if (profile.OpenAiEndpoint == null) return [];
+        var route = profile.OpenAiEndpoint.AbsoluteUri.TrimEnd('/');
+        if (route is not ("https://api.openai.com/v1" or
+            "https://chatgpt.com/backend-api/codex"))
+            throw new InvalidDataException("Unsupported authenticated model endpoint.");
+        return [
+            "model_provider=\"pda\"",
+            "model_providers.pda={name=\"PDA OpenAI\",base_url=" +
+            JsonSerializer.Serialize(route) +
+            ",wire_api=\"responses\",requires_openai_auth=true}"
+        ];
+    }
     public static bool DisabledFeaturesObserved(string listing)
     {
         var rows = listing.Split('\n').Select(line =>
