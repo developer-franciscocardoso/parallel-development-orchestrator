@@ -3,6 +3,7 @@
     <Project Path="src/Pda.Admission/Pda.Admission.csproj" />
     <Project Path="src/Pda.Agents/Pda.Agents.csproj" />
     <Project Path="src/Pda.Application/Pda.Application.csproj" />
+    <Project Path="src/Pda.Benchmarks/Pda.Benchmarks.csproj" />
     <Project Path="src/Pda.Cli/Pda.Cli.csproj" />
     <Project Path="src/Pda.Core/Pda.Core.csproj" />
     <Project Path="src/Pda.Dashboard/Pda.Dashboard.csproj" />
