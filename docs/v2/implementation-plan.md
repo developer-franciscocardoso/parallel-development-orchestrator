@@ -105,3 +105,11 @@ These interfaces are sequential prerequisites, not parallel guesses.
   review examined the commit and the coordinator advanced the plan branch.
   The user checkout retained its original contents. Focused suites passed
   20 Git, 11 quality and 8 verification tests. No paid model was invoked.
+- P07 accepted. Real CLI invocations registered and inspected Git, generated
+  and validated a plan, exported diagnostics, imported legacy evidence and
+  backed up/restored state. Edge desktop and mobile tests covered login,
+  SSE updates, pause/resume, concurrency controls, task details and DAG.
+  Anonymous API returned 401 and authenticated plan export returned 200.
+- P08 measured dashboard history payloads and latency. Summary returns
+  100 activity entries and retains full exports. The regression test
+  confirms matching metrics and chronological history.
