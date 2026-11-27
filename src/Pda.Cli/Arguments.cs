@@ -13,6 +13,13 @@ internal sealed class Arguments
     [
         new("init", 0, "init"),
         new("doctor", 0, "doctor"),
+        new("migrate", 1, "migrate LEGACY_EXECUTION_DIR"),
+        new("migration list", 0, "migration list"),
+        new("migration reconcile", 2, "migration reconcile SOURCE SHA256 " +
+            "--confirm-stopped --usage TOTALS_JSON_FILE --evidence TEXT",
+            "confirm-stopped", "usage", "evidence"),
+        new("backup", 1, "backup NEW_BACKUP_FILE"),
+        new("restore", 2, "restore BACKUP_FILE NEW_DATABASE_FILE"),
         new("project add", 2, "project add PROJECT REPOSITORY"),
         new("project inspect", 1, "project inspect PROJECT [--refresh]", "refresh"),
         new("plan create", 2, "plan create PROJECT PLAN --budget N " +
@@ -45,7 +52,7 @@ internal sealed class Arguments
     internal string Name { get; private init; } = "";
     internal string[] Values { get; private init; } = [];
     private readonly Dictionary<string, List<string>> options = [];
-    private static readonly HashSet<string> Flags = ["help", "json", "refresh"];
+    private static readonly HashSet<string> Flags = ["help", "json", "refresh", "confirm-stopped"];
 
     internal bool Has(string name) => options.ContainsKey(name);
     internal string[] Many(string name) =>

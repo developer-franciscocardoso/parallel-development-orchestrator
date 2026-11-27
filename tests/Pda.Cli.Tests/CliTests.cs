@@ -52,10 +52,48 @@ public sealed class CliTests : IDisposable
         Assert.Equal(2, (await Run("plan", "execute", "plan", "--typo")).Code);
     }
 
+    [Fact]
+    public async Task MigrationAndRestorePreserveExactEvidenceAndRejectOverwrite()
+    {
+        var legacy = Directory.CreateDirectory(root + "-repo").FullName;
+        string At(string name) => Path.Combine(legacy, name);
+        var original = System.Text.Encoding.UTF8.GetBytes(
+            "{ \"schema_version\": 2, \"tasks\": [{\"attempts\":[" +
+            "{\"status\":\"starting\",\"usage\":null}]}] }\n");
+        File.WriteAllText(At("execution-state.json"), "{\"schema_version\":2}");
+        File.WriteAllBytes(At("task-registry.json"), original);
+        var digest = Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(original));
+        Assert.Equal(0, (await Run("migrate", legacy)).Code);
+        Assert.Equal(0, (await Run("migrate", legacy)).Code);
+        Assert.Equal(original, File.ReadAllBytes(At("task-registry.json")));
+        var listed = await Run("--json", "migration", "list");
+        Assert.Equal(2, JsonDocument.Parse(listed.Output).RootElement
+            .GetArrayLength());
+        Assert.Contains(digest, listed.Output);
+        var totals = At("totals.json");
+        File.WriteAllText(totals, "[-1]");
+        async Task<int> Reconcile() => (await Run("migration", "reconcile",
+            At("task-registry.json"), digest, "--confirm-stopped", "--usage",
+            totals, "--evidence", "fixture evidence")).Code;
+        Assert.Equal(2, await Reconcile());
+        File.WriteAllText(totals, "[11]");
+        Assert.Equal(0, await Reconcile());
+        var snapshot = At("snapshot.db");
+        var restored = At("restored.db");
+        Assert.Equal(0, (await Run("backup", snapshot)).Code);
+        Assert.Equal(1, (await Run("backup", snapshot)).Code);
+        Assert.Equal(0, (await Run("restore", snapshot, restored)).Code);
+        Assert.Equal(1, (await Run("restore", snapshot, restored)).Code);
+        Assert.Equal(1, (await Run("restore", totals, At("bad.db"))).Code);
+        Assert.False(File.Exists(At("bad.db")));
+        Assert.Equal(original, File.ReadAllBytes(At("task-registry.json")));
+    }
+
     private async Task<(int Code, string Output)> Run(params string[] args)
     {
         var dll = typeof(CliApplication).Assembly.Location;
-        var native = Path.Combine(Path.GetDirectoryName(dll)!, 
+        var native = Path.Combine(Path.GetDirectoryName(dll)!,
             OperatingSystem.IsWindows() ? "pda.exe" : "pda");
         var start = new ProcessStartInfo(File.Exists(native) ? native : "dotnet") {
             RedirectStandardOutput = true, RedirectStandardError = true,
