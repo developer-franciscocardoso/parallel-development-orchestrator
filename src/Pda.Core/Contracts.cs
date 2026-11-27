@@ -62,6 +62,8 @@ public interface IStateStore
     IReadOnlyList<Attempt> Attempts(string planId);
     Attempt? Reserve(string planId, string taskId, string requestKey,
         int concurrency = 6);
+    Attempt RejectPreflight<T>(string attemptId, long expectedVersion,
+        T result, string detail, bool policyDenied);
     Attempt Transition(string attemptId, long expectedVersion,
         AttemptState state, string evidence, long? usedTokens = null);
     IReadOnlyList<JournalEntry> History(string? planId, long after = 0);

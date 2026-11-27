@@ -94,6 +94,17 @@ public sealed partial class ExecutionCoordinator(IStateStore store,
                 await monitoring.CancelAsync();
                 await monitor;
             }
+            if (result.PreflightRejected)
+            {
+                if (runtime is not CodexRuntime || result.Simulated ||
+                    result.Process != null || result.Report != null ||
+                    result.Usage != new TokenUsage(0, 0, 0) ||
+                    result.Error is not (RuntimeError.Authentication or
+                        RuntimeError.Unavailable or RuntimeError.PolicyDenied))
+                    throw new InvalidDataException("Inconsistent preflight evidence.");
+                return store.RejectPreflight(attempt.Id, attempt.Version, result,
+                    result.Detail, result.Error == RuntimeError.PolicyDenied);
+            }
             store.PutArtifact(planId, "result", attempt.Id, result);
             return Finish(attempt, result, simulated,
                 stop.IsCancellationRequested || CancellationRequested(planId,

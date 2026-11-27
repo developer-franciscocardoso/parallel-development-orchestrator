@@ -32,7 +32,10 @@ public sealed record RuntimeDiscovery(string Id, string? Version,
 
 public sealed record RuntimeResult(RuntimeError Error, string Detail,
     TokenUsage? Usage, WorkerReport? Report, ProcessOutcome? Process,
-    bool Simulated);
+    bool Simulated)
+{
+    public bool PreflightRejected { get; init; }
+}
 
 public interface IAgentRuntime
 {

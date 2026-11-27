@@ -105,7 +105,9 @@ public sealed class CodexRuntime(CodexProfile profile,
         {
             var state = await DiscoverAsync(request, stop.Token);
             if (!state.Ready)
-                return new(state.Error, state.Detail, null, null, null, false);
+                return new RuntimeResult(state.Error, state.Detail,
+                    new TokenUsage(0, 0, 0), null, null, false)
+                    { PreflightRejected = true };
             var env = CodexPolicy.EnvironmentFor(profile, request.Worktree);
             Requests.CheckConfig(request.Worktree, profile.Home);
             Requests.CheckEvidence(request, profile);
