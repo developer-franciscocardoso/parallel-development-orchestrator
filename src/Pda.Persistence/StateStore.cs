@@ -14,7 +14,8 @@ public sealed partial class StateStore(string path) : IStateStore
         FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
 
     public void CreatePlan(string projectId, string repository, string planId,
-        IReadOnlyList<TaskContract> tasks, long tokenBudget)
+        IReadOnlyList<TaskContract> tasks, long tokenBudget,
+        long? profileVersion = null)
     {
         ContractValidator.ValidateId(projectId);
         ContractValidator.ValidateId(planId);
@@ -25,8 +26,15 @@ public sealed partial class StateStore(string path) : IStateStore
         using var db = database.Open();
         using var tx = db.BeginTransaction(deferred: false);
         EnsureProject(db, tx, projectId, root);
+        if (profileVersion.HasValue && (profileVersion <= 0 ||
+            db.Number("SELECT coalesce(max(version),0) FROM project_profiles WHERE project=$p0",
+                tx, projectId) != profileVersion))
+            throw new InvalidOperationException("Project profile changed.");
         db.Execute("INSERT INTO plans VALUES($p0,$p1,$p2)", tx, planId,
             projectId, tokenBudget);
+        if (profileVersion.HasValue)
+            db.Execute("INSERT INTO plan_profiles VALUES($p0,$p1,$p2)", tx,
+                planId, projectId, profileVersion.Value);
         foreach (var task in tasks)
             db.Execute("INSERT INTO tasks VALUES($p0,$p1,$p2)", tx,
                 planId, task.Id, JsonSerializer.Serialize(task));
@@ -35,7 +43,7 @@ public sealed partial class StateStore(string path) : IStateStore
                 db.Execute("INSERT INTO dependencies VALUES($p0,$p1,$p2)",
                     tx, planId, task.Id, dep);
         Append(db, tx, planId, null, null, "PlanCreated",
-            JsonSerializer.Serialize(new { projectId, root, tokenBudget, tasks }));
+            JsonSerializer.Serialize(new { projectId, root, tokenBudget, tasks, profileVersion }));
         tx.Commit();
     }
 

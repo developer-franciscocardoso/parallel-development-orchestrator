@@ -4,6 +4,7 @@
     <Project Path="src/Pda.Core/Pda.Core.csproj" />
     <Project Path="src/Pda.Execution/Pda.Execution.csproj" />
     <Project Path="src/Pda.Persistence/Pda.Persistence.csproj" />
+    <Project Path="src/Pda.Planning/Pda.Planning.csproj" />
     <Project Path="src/Pda.Providers/Pda.Providers.csproj" />
     <Project Path="src/Pda.Recovery/Pda.Recovery.csproj" />
     <Project Path="src/Pda.Repositories/Pda.Repositories.csproj" />
@@ -14,6 +15,7 @@
     <Project Path="tests/Pda.Core.Tests/Pda.Core.Tests.csproj" />
     <Project Path="tests/Pda.Execution.Tests/Pda.Execution.Tests.csproj" />
     <Project Path="tests/Pda.Persistence.Tests/Pda.Persistence.Tests.csproj" />
+    <Project Path="tests/Pda.Planning.Tests/Pda.Planning.Tests.csproj" />
     <Project Path="tests/Pda.Providers.Tests/Pda.Providers.Tests.csproj" />
     <Project Path="tests/Pda.Recovery.Tests/Pda.Recovery.Tests.csproj" />
     <Project Path="tests/Pda.Repositories.Tests/Pda.Repositories.Tests.csproj" />

@@ -1,6 +1,6 @@
 namespace Pda.Repositories;
 
-public sealed class GitRepositoryService
+public sealed partial class GitRepositoryService
 {
     private const string AttemptPrefix = "pda/attempt/";
     private readonly GitProcess git = new(GitProcess.FindExecutable());

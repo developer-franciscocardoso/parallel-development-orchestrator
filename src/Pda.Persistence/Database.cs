@@ -27,10 +27,11 @@ internal sealed class Database
         var version = db.Number("PRAGMA user_version", tx);
         if (version > 0 && db.Number("PRAGMA application_id", tx) != ApplicationId)
             throw new InvalidDataException("Unrecognized database.");
-        if (version > 2) throw new InvalidDataException("Newer schema.");
+        if (version > 3) throw new InvalidDataException("Newer schema.");
         if (version == 0) db.Execute(Schema, tx);
         if (version < 2) db.Execute(SecondMigration, tx);
-        ValidateSchema(db, tx, 2);
+        if (version < 3) db.Execute(ThirdMigration, tx);
+        ValidateSchema(db, tx, 3);
         tx.Commit();
     }
 
@@ -40,6 +41,17 @@ internal sealed class Database
         db.Open();
         return db;
     }
+
+    private const string ThirdMigration = """
+        CREATE TABLE project_profiles(project TEXT NOT NULL REFERENCES projects,
+            version INTEGER NOT NULL CHECK(version>0), data TEXT NOT NULL,
+            commit_sha TEXT NOT NULL,
+            PRIMARY KEY(project,version));
+        CREATE TABLE plan_profiles(plan TEXT PRIMARY KEY REFERENCES plans,
+            project TEXT NOT NULL, version INTEGER NOT NULL,
+            FOREIGN KEY(project,version) REFERENCES project_profiles(project,version));
+        PRAGMA user_version=3;
+        """;
 
     private const string SecondMigration = """
         CREATE TABLE legacy_reconciliations(
@@ -61,7 +73,9 @@ internal sealed class Database
         reference.Execute(Schema);
         var first = ReadSchema(reference, null);
         reference.Execute(SecondMigration);
-        return [first, ReadSchema(reference, null)];
+        var second = ReadSchema(reference, null);
+        reference.Execute(ThirdMigration);
+        return [first, second, ReadSchema(reference, null)];
     });
 
     private static string[] ReadSchema(SqliteConnection db,
@@ -72,7 +86,7 @@ internal sealed class Database
     internal static void ValidateSchema(SqliteConnection db,
         SqliteTransaction? tx, long version)
     {
-        if (version is < 1 or > 2 ||
+        if (version is < 1 or > 3 ||
             !ReadSchema(db, tx).SequenceEqual(ExpectedSchemas.Value[version - 1]))
             throw new InvalidDataException("Database schema mismatch.");
     }

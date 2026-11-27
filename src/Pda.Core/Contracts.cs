@@ -24,7 +24,12 @@ public sealed record JournalEntry(long Sequence, string? PlanId, string? TaskId,
     string? AttemptId, string Kind, string Payload, DateTimeOffset Timestamp);
 
 public sealed record ProjectInfo(string Id, string Root);
-public sealed record PlanInfo(string Id, string ProjectId, long TokenBudget);
+public sealed record PlanInfo(string Id, string ProjectId, long TokenBudget,
+    long? ProfileVersion = null, string? BaselineCommit = null);
+public interface IProjectProfile
+{
+    string Commit { get; }
+}
 public sealed record Artifact<T>(string Id, T Data, long Version);
 
 public interface IWorkerIdentity
@@ -35,6 +40,10 @@ public interface IWorkerIdentity
 
 public interface IStateStore
 {
+    Artifact<T> SaveProjectProfile<T>(string project, T profile,
+        long expectedVersion) where T : IProjectProfile;
+    Artifact<T>? LatestProjectProfile<T>(string project);
+    IReadOnlyList<Artifact<T>> ProjectProfiles<T>(string project);
     IDisposable AcquireStartupGuard();
     void RegisterProject(string id, string repository);
     IReadOnlyList<ProjectInfo> Projects();
@@ -47,7 +56,8 @@ public interface IStateStore
     Attempt AuthorizeRetry(string attemptId, long expectedVersion,
         string reason);
     void CreatePlan(string projectId, string repository, string planId,
-        IReadOnlyList<TaskContract> tasks, long tokenBudget);
+        IReadOnlyList<TaskContract> tasks, long tokenBudget,
+        long? profileVersion = null);
     IReadOnlyList<TaskContract> Contracts(string planId);
     IReadOnlyList<Attempt> Attempts(string planId);
     Attempt? Reserve(string planId, string taskId, string requestKey,
