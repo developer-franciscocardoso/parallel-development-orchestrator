@@ -55,11 +55,14 @@ public sealed class CliTests : IDisposable
     private async Task<(int Code, string Output)> Run(params string[] args)
     {
         var dll = typeof(CliApplication).Assembly.Location;
-        var start = new ProcessStartInfo("dotnet") {
+        var native = Path.Combine(Path.GetDirectoryName(dll)!, 
+            OperatingSystem.IsWindows() ? "pda.exe" : "pda");
+        var start = new ProcessStartInfo(File.Exists(native) ? native : "dotnet") {
             RedirectStandardOutput = true, RedirectStandardError = true,
             UseShellExecute = false
         };
-        foreach (var arg in new[] {dll, "--home", root}.Concat(args))
+        if (!File.Exists(native)) start.ArgumentList.Add(dll);
+        foreach (var arg in new[] {"--home", root}.Concat(args))
             start.ArgumentList.Add(arg);
         using var p = Process.Start(start)!;
         var output = p.StandardOutput.ReadToEndAsync();
