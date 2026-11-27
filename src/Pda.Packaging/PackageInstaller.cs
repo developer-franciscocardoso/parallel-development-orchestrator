@@ -57,7 +57,9 @@ public static class PackageInstaller
     public static Installation? Status(string installRoot)
     {
         string root = Paths.Root(installRoot);
-        if (!Directory.Exists(root) || !File.Exists(Path.Combine(root, "current.json")))
+        var marker = Path.Combine(root, "current.json");
+        Paths.Check(marker);
+        if (!Directory.Exists(root) || !File.Exists(marker))
             return null;
         using var gate = Lock(root);
         var pointer = ReadPointer(root);
@@ -165,6 +167,13 @@ public static class PackageInstaller
         Format.Require(manifest.Version == release.Version,
             "Installed version differs from pinned release.");
         var files = manifest.Files.ToDictionary(f => f.Path, StringComparer.Ordinal);
+        var expectedDirs = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var name in files.Keys)
+        {
+            for (var slash = name.IndexOf('/'); slash >= 0;
+                slash = name.IndexOf('/', slash + 1))
+                expectedDirs.Add(name[..slash]);
+        }
         var directories = new Stack<string>();
         directories.Push(tree);
         long total = 0;
@@ -176,9 +185,16 @@ public static class PackageInstaller
                 Paths.Check(entry);
                 Format.Require(++entries <= 2 * Format.MaxFiles + 1,
                     "Installed tree exceeds limits.");
-                if (Directory.Exists(entry)) { directories.Push(entry); continue; }
+
                 var name = Path.GetRelativePath(tree, entry)
                     .Replace(Path.DirectorySeparatorChar, '/');
+                if (Directory.Exists(entry))
+                {
+                    Format.Require(expectedDirs.Contains(name),
+                        "Unexpected directory in installed version.");
+                    directories.Push(entry);
+                    continue;
+                }
                 if (name == Format.SavedManifest) continue;
                 Format.Require(files.Remove(name, out var item),
                     "Unexpected file in installed version.");

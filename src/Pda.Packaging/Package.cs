@@ -61,11 +61,34 @@ internal sealed class Package : IDisposable
                 count <= 2 * Format.MaxFiles + 1 && size <= 8 * 1024 * 1024 &&
                 (long)offset + size == stream.Length - e.Length,
                 "Unsupported or oversized ZIP directory.");
+            VerifyCentralHeaders(stream, offset, size, count);
             return;
         }
         throw new InvalidDataException("Missing ZIP directory.");
     }
 
+    private static void VerifyCentralHeaders(Stream stream, uint offset,
+        uint size, int expectedEntries)
+    {
+        stream.Position = offset;
+        long end = offset + (long)size;
+        Span<byte> header = stackalloc byte[46];
+        for (int index = 0; index < expectedEntries; index++)
+        {
+            Format.Require(stream.Position + header.Length <= end,
+                "Premature ZIP directory end.");
+            stream.ReadExactly(header);
+            Format.Require(BinaryPrimitives.ReadUInt32LittleEndian(header) ==
+                0x02014b50, "Invalid ZIP entry header.");
+            int variable = BinaryPrimitives.ReadUInt16LittleEndian(header[28..]) +
+                BinaryPrimitives.ReadUInt16LittleEndian(header[30..]) +
+                BinaryPrimitives.ReadUInt16LittleEndian(header[32..]);
+            Format.Require(stream.Position + variable <= end,
+                "ZIP entry exceeds directory.");
+            stream.Position += variable;
+        }
+        Format.Require(stream.Position == end, "ZIP directory count mismatch.");
+    }
     private void Index()
     {
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
