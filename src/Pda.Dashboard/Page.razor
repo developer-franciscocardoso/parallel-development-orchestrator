@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" /><meta name="viewport"
+        content="width=device-width, initial-scale=1" />
+    <title>@Data.Section · PDA</title>
+    <link rel="stylesheet" href="/dashboard.css" />
+    <script src="/dashboard.js" defer></script>
+</head>
+<body><div class="shell">
+    <aside>
+        <a class="brand" href="/"><b>P</b><span>Parallel Development</span></a>
+        <nav aria-label="Dashboard sections">
+        @foreach (var section in DashboardData.Sections)
+        {
+            <a href="@DashboardData.Link(section, Data.Selected?.Plan.Id)"
+                aria-current="@(section == Data.Section ? "page" : null)">
+                @section</a>
+        }
+        </nav>
+        <form method="post" action="/logout">
+            <input type="hidden" name="csrf" value="@Csrf" />
+            <button class="quiet" type="submit">Sign out</button>
+        </form>
+    </aside>
+    <main id="main">
+        <header><h1>@Data.Section</h1>
+            <span id="connection" role="status">Connecting</span></header>
+        @if (Data.Plans.Count > 0)
+        {
+            <form class="picker" method="get" action="/">
+                <input type="hidden" name="section" value="@Data.Section" />
+                <label for="plan-picker">Plan</label>
+                <select id="plan-picker" name="plan">
+                @foreach (var plan in Data.Plans)
+                {
+                    <option value="@plan.Id" selected="@(plan.Id == Data.Selected?.Plan.Id)">
+                        @plan.Id</option>
+                }
+                </select>
+                <button type="submit" class="secondary">Open</button>
+            </form>
+        }
+        <div id="live" data-cursor="@Data.Cursor">
+        @if (Data.Section == "Projects")
+        {
+            <h2>Registered repositories</h2>
+            @if (Data.Projects.Count == 0) { <p>There are no registered projects.</p> }
+            @foreach (var project in Data.Projects)
+            { <article><strong>@project.Id</strong><code>@project.Root</code></article> }
+        }
+        else if (Data.Section == "Plans")
+        {
+            <h2>Development plans</h2>
+            @if (Data.Plans.Count == 0) { <p>There are no plans to display.</p> }
+            @foreach (var plan in Data.Plans)
+            {
+                <article><a href="@DashboardData.Link("Overview", plan.Id)">
+                    @plan.Id</a><span>@plan.ProjectId</span>
+                    <code>@(plan.BaselineCommit ?? "No pinned baseline")</code>
+                </article>
+            }
+        }
+        else if (Data.Section == "Diagnostics" && Data.Doctor is { } doctor)
+        {
+            <h2>Environment checks</h2>
+            <dl><dt>Runtime readiness</dt><dd>@(doctor.Ready ? "Ready" : "Attention required")</dd>
+                <dt>Live Codex</dt><dd>@(doctor.LiveConfigured ? "Configured" : "Unconfigured")</dd></dl>
+            <ul>@foreach (var detail in doctor.Diagnostics) { <li>@detail</li> }</ul>
+        }
+        else if (Data.Selected is { } selected)
+        {
+            <PlanView Report="selected" Section="@Data.Section" Csrf="@Csrf" />
+        }
+        else
+        {
+            <div class="empty"><h2>No plan selected</h2>
+                <p>Register a repository and create a plan with the CLI.</p>
+                <a href="/?section=Projects">View projects</a></div>
+        }
+        </div>
+    </main>
+</div></body></html>
+@code {
+    [Parameter, EditorRequired] public DashboardData Data { get; set; } = null!;
+    [Parameter] public string Csrf { get; set; } = "";
+}

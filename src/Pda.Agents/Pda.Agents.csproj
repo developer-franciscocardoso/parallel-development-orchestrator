@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Pda.Execution\Pda.Execution.csproj" />
+    <ProjectReference Include="..\Pda.Security\Pda.Security.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Pda.Agents.Tests" />
+    <None Update="pda-worker-report.schema.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Pda.Scheduling/Pda.Scheduling.csproj" />
+    <ProjectReference Include="../Pda.Admission/Pda.Admission.csproj" />
+    <ProjectReference Include="../Pda.Planning/Pda.Planning.csproj" />
+  </ItemGroup>
+</Project>

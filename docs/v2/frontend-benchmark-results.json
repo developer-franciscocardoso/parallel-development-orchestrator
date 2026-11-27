@@ -1,0 +1,120 @@
+{
+  "environment": {
+    "os": "Microsoft Windows 10.0.26300",
+    "runtime": ".NET 10.0.12",
+    "architecture": "X64",
+    "logicalProcessors": 8,
+    "clockFrequency": 10000000
+  },
+  "method": "Three sequential local apphost iterations per run. Nearest-rank p95. No browser paint measurement.",
+  "baseline": {
+    "dashboardCommit": "5ce510d",
+    "pollIntervalMs": 1000,
+    "frontend": [
+      {
+        "operation": "native.help.processStartToExit",
+        "samplesMs": [
+          424.4067,
+          291.1291,
+          366.2988
+        ],
+        "p50Ms": 366.2988,
+        "p95Ms": 424.4067,
+        "targetMs": 1000,
+        "meetsTarget": true
+      },
+      {
+        "operation": "native.doctor.processStartToExit",
+        "samplesMs": [
+          488.4135,
+          600.2524,
+          656.0994
+        ],
+        "p50Ms": 600.2524,
+        "p95Ms": 656.0994,
+        "targetMs": null,
+        "meetsTarget": null
+      },
+      {
+        "operation": "http.projects.authenticatedWarmRequest",
+        "samplesMs": [
+          16.5419,
+          10.5285,
+          13.5135
+        ],
+        "p50Ms": 13.5135,
+        "p95Ms": 16.5419,
+        "targetMs": 100,
+        "meetsTarget": true
+      },
+      {
+        "operation": "dashboard.journalWriteToSseDelivery",
+        "samplesMs": [
+          1073.2109,
+          1101.2665,
+          1006.2257
+        ],
+        "p50Ms": 1073.2109,
+        "p95Ms": 1101.2665,
+        "targetMs": 1000,
+        "meetsTarget": false
+      }
+    ]
+  },
+  "final": {
+    "dashboardCommit": "73b7c00",
+    "pollIntervalMs": 400,
+    "startedUtc": "2026-11-27T09:48:43.9633368+00:00",
+    "finishedUtc": "2026-11-27T09:48:48.8941733+00:00",
+    "frontend": [
+      {
+        "operation": "native.help.processStartToExit",
+        "samplesMs": [
+          161.5186,
+          194.0523,
+          282.146
+        ],
+        "p50Ms": 194.0523,
+        "p95Ms": 282.146,
+        "targetMs": 1000,
+        "meetsTarget": true
+      },
+      {
+        "operation": "native.doctor.processStartToExit",
+        "samplesMs": [
+          369.9481,
+          482.1935,
+          413.1831
+        ],
+        "p50Ms": 413.1831,
+        "p95Ms": 482.1935,
+        "targetMs": null,
+        "meetsTarget": null
+      },
+      {
+        "operation": "http.projects.authenticatedWarmRequest",
+        "samplesMs": [
+          13.0489,
+          6.7456,
+          5.9532
+        ],
+        "p50Ms": 6.7456,
+        "p95Ms": 13.0489,
+        "targetMs": 100,
+        "meetsTarget": true
+      },
+      {
+        "operation": "dashboard.journalWriteToSseDelivery",
+        "samplesMs": [
+          444.4595,
+          404.34,
+          409.3607
+        ],
+        "p50Ms": 409.3607,
+        "p95Ms": 444.4595,
+        "targetMs": 1000,
+        "meetsTarget": true
+      }
+    ]
+  }
+}

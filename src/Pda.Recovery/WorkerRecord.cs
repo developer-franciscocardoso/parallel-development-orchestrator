@@ -1,0 +1,22 @@
+using Pda.Core;
+
+namespace Pda.Recovery;
+
+public sealed record WorkerRecord(string AttemptId, string Worktree,
+    string Branch, string BaseCommit, int ProcessId,
+    DateTimeOffset ProcessStartedUtc, string JobName,
+    string StandardOutputPath, string StandardErrorPath,
+    string? RepositoryCommonDirectory = null) : IWorkerIdentity
+{
+    public const string ArtifactKind = IWorkerIdentity.ArtifactKind;
+}
+
+public enum TreeCondition { Unknown, Live, Stopped }
+
+public sealed record WorkerObservation(TreeCondition Tree,
+    bool RepositoryIntact, string Evidence);
+
+public interface IWorkerInspector
+{
+    WorkerObservation Inspect(WorkerRecord worker);
+}
