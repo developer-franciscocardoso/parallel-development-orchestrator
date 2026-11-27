@@ -42,17 +42,27 @@ function Get-Entry($Zip, [string] $Name, [long] $Limit) {
     return $entries[0]
 }
 
+function Copy-BoundedEntry($Entry, [IO.Stream] $Destination) {
+    $source = $Entry.Open()
+    try {
+        $buffer = [byte[]]::new(65536)
+        [long]$written = 0
+        while (($count = $source.Read($buffer, 0, $buffer.Length)) -gt 0) {
+            $written += $count
+            if ($written -gt $Entry.Length) { throw 'ZIP length mismatch.' }
+            $Destination.Write($buffer, 0, $count)
+        }
+        if ($written -ne $Entry.Length) { throw 'Incomplete ZIP member.' }
+    } finally { $source.Dispose() }
+}
 function Copy-VerifiedEntry($Zip, $Manifest, [string] $Name, [string] $Target) {
     $record = @($Manifest.files | Where-Object { $_.path -ceq $Name })
     if ($record.Count -ne 1 -or $record[0].sha256 -notmatch '^[a-f0-9]{64}$') {
         throw "Missing release digest: $Name"
     }
     $entry = Get-Entry $Zip "app/$Name" 536870912
-    $source = $entry.Open()
-    try {
-        $out = [IO.File]::Open($Target, 'CreateNew', 'Write', 'None')
-        try { $source.CopyTo($out) } finally { $out.Dispose() }
-    } finally { $source.Dispose() }
+    $out = [IO.File]::Open($Target, 'CreateNew', 'Write', 'None')
+    try { Copy-BoundedEntry $entry $out } finally { $out.Dispose() }
     if ((Get-FileHash -LiteralPath $Target).Hash -ne $record[0].sha256) {
         throw "Bootstrap file hash mismatch: $Name"
     }
@@ -89,6 +99,9 @@ for ($dir = [IO.DirectoryInfo]::new($root); $dir; $dir = $dir.Parent) {
 $inputFile = [IO.File]::Open($package, 'Open', 'Read', 'Read')
 $stage = $null
 try {
+    if ($inputFile.Length -le 0 -or $inputFile.Length -gt 1073741824) {
+        throw 'Package exceeds the supported size.'
+    }
     $algorithm = [Security.Cryptography.SHA256]::Create()
     try { $actual = [BitConverter]::ToString($algorithm.ComputeHash($inputFile)) }
     finally { $algorithm.Dispose() }
@@ -99,9 +112,13 @@ try {
     $zip = [IO.Compression.ZipArchive]::new($inputFile, 'Read', $true)
     try {
         $entry = Get-Entry $zip 'manifest.json' 1048576
-        $reader = [IO.StreamReader]::new($entry.Open(), [Text.UTF8Encoding]::new($false, $true))
-        try { $manifest = $reader.ReadToEnd() | ConvertFrom-Json -AsHashtable }
-        finally { $reader.Dispose() }
+        $bytes = [IO.MemoryStream]::new()
+        try {
+            Copy-BoundedEntry $entry $bytes
+            $utf8 = [Text.UTF8Encoding]::new($false, $true)
+            $manifest = $utf8.GetString($bytes.ToArray()) |
+                ConvertFrom-Json -AsHashtable
+        } finally { $bytes.Dispose() }
         if ($manifest.formatVersion -ne 1 -or $manifest.entryPoint -cne 'pda.exe') {
             throw 'Unsupported release manifest.'
         }

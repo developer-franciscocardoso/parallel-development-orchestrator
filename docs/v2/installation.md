@@ -9,7 +9,7 @@ compatible, deliberately configured native Codex installation described in
 ## Build a release
 
 From a verified source checkout with the .NET 10 SDK, choose an output
-directory outside the repository.
+fresh directory outside the repository.
 
 ```powershell
 $release = ./scripts/Publish-Pda.ps1 -Version 2.0.0 -OutputDirectory C:\PdaReleases
@@ -91,3 +91,17 @@ It checks initial digest rejection, fresh installation, runtime startup,
 project registration, live launcher upgrade, binary rollback and recovery
 of the same registered Git baseline. Its unique scratch root is retained
 for inspection.
+
+### Observed Windows acceptance
+
+Two separate self-contained Windows x64 publications produced ZIPs of
+46,420,206 bytes (2.0.0-smoke.1) and 46,420,521 bytes (2.0.0-smoke.2).
+An incorrect digest created no install root. With the correct digest, the
+bootstrap installed the first version. The installed launcher initialized
+a separate database, registered a real Git project, upgraded to the
+second version and rolled back to the first. Its stored project profile
+and baseline commit matched before and after rollback.
+
+After rollback, the installed executable served the authenticated project
+page, registered project API, CSS and JavaScript from the bundled dashboard.
+This acceptance run used isolated local state and no model credentials.
