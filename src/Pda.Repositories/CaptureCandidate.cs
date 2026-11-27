@@ -83,7 +83,8 @@ public sealed partial class GitRepositoryService
             throw new GitRepositoryException("Unsafe changed path.");
         LocalPaths.RejectReparsePoints(Path.Combine(root, path));
         if (!permittedPath(path))
-            throw new GitRepositoryException("Change outside task scope.");
+            throw new GitRepositoryException(
+                "Change outside task scope: " + path);
     }
 
     private WorktreeState OpenWorker(AttemptWorktree attempt)

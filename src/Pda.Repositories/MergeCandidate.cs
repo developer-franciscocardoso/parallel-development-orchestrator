@@ -37,10 +37,18 @@ public sealed partial class GitRepositoryService
         var head = state.Commit;
         if (head == expectedHead)
         {
-            CoordinatorGit(path, "merge", "--no-edit", "--no-ff",
-                "--no-autostash", "--no-verify-signatures", "--no-gpg-sign",
-                "-s", "ort", "-m", "PDA verified candidate", "--",
-                candidate.Commit);
+            try
+            {
+                CoordinatorGit(path, "merge", "--no-edit", "--no-ff",
+                    "--no-autostash", "--no-verify-signatures", "--no-gpg-sign",
+                    "-s", "ort", "-m", "PDA verified candidate", "--",
+                    candidate.Commit);
+            }
+            catch (GitRepositoryException error)
+            {
+                throw new GitRepositoryException(
+                    $"Merge failed. Preserved {branch} in {path}.", error);
+            }
             head = Register(path).Commit;
         }
         var merge = new GitMerge(plan, candidate, expectedHead,
