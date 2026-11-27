@@ -40,7 +40,15 @@ public sealed class CliTests : IDisposable
         Assert.True(create.Code == 0, create.Output);
         Assert.Equal(0, (await Run("plan", "validate", "plan")).Code);
         Assert.Equal(0, (await Run("task", "inspect", "plan", "T001")).Code);
-        Assert.Equal(0, (await Run("execution", "history", "plan")).Code);
+        foreach (var command in new[] {"task list", "worker list",
+            "review list", "integration list", "execution status",
+            "execution history", "execution recover"})
+        {
+            var parts = command.Split(' ');
+            var response = await Run("--json", parts[0], parts[1], "plan");
+            Assert.True(response.Code == 0, response.Output);
+            using var json = JsonDocument.Parse(response.Output);
+        }
         Assert.Equal(2, (await Run("plan", "execute", "plan", "--typo")).Code);
     }
 
