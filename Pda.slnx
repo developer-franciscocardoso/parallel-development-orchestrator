@@ -9,6 +9,7 @@
     <Project Path="src/Pda.Dashboard/Pda.Dashboard.csproj" />
     <Project Path="src/Pda.Execution/Pda.Execution.csproj" />
     <Project Path="src/Pda.Hosting/Pda.Hosting.csproj" />
+    <Project Path="src/Pda.Packaging/Pda.Packaging.csproj" />
     <Project Path="src/Pda.Persistence/Pda.Persistence.csproj" />
     <Project Path="src/Pda.Planning/Pda.Planning.csproj" />
     <Project Path="src/Pda.Providers/Pda.Providers.csproj" />
