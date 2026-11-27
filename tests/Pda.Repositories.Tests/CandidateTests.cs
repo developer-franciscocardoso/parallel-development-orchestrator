@@ -62,12 +62,13 @@ public sealed partial class GitRepositoryTests
         // Simulate termination after staging and before the ref transaction.
         Git(plan.Path, "read-tree", "-u", "-m", basis.Commit, merged.Commit);
         var advanced = new GitRepositoryService().AdvancePlan(merged);
-        Assert.Throws<GitRepositoryException>(() =>
+        var error = Assert.Throws<GitRepositoryException>(() =>
             service.PrepareMerge(plan, advanced.Commit, second, "two"));
         Assert.Equal(advanced, service.Register(plan.Path));
         var conflict = service.ListWorktrees(original.Repository)
             .Single(w => w.Branch?.StartsWith("pda/merge/") == true &&
                 w.Branch != merged.Branch);
+        Assert.Contains(conflict.Path, error.Message);
         Assert.False(service.Inspect(conflict.Path).IsClean);
         Assert.Equal(original, service.Register(Source));
     }
