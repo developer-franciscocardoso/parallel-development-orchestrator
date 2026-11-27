@@ -28,12 +28,7 @@ public sealed class PlanExecution(IStateStore store, ExecutionCoordinator worker
             var ready = before.Attempts.Where(a => a.State is
                 AttemptState.AwaitingVerification or AttemptState.Verified);
             foreach (var attempt in ready)
-            {
-                var verified = await verifyAndIntegrate(planId, attempt.Id,
-                    cancellation);
-                if (verified.State == attempt.State)
-                    return Outcome(planId);
-            }
+                await verifyAndIntegrate(planId, attempt.Id, cancellation);
             var batch = Enumerable.Range(0, concurrency)
                 .Select(_ => workers.RunNextAsync(planId, cancellation));
             var results = await Task.WhenAll(batch);
@@ -50,3 +45,4 @@ public sealed class PlanExecution(IStateStore store, ExecutionCoordinator worker
             status);
     }
 }
+

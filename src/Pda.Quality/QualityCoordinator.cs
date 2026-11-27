@@ -73,6 +73,18 @@ public sealed partial class QualityCoordinator(IStateStore store,
             stage = "integration";
             return await Integrate(attempt, workspace, task, candidate, token);
         }
+        catch (ReviewPendingException waiting)
+        {
+            var prior = Load<string>(planId, "review-pending", attemptId);
+            if (prior != waiting.Message)
+            {
+                var version = store.Artifacts<string>(planId, "review-pending")
+                    .SingleOrDefault(a => a.Id == attemptId)?.Version ?? 0;
+                store.PutArtifact(planId, "review-pending", attemptId,
+                    waiting.Message, version);
+            }
+            return attempt;
+        }
         catch (Exception error) when (error is not OperationCanceledException)
         {
             // Once a ref movement was intended its effect may need recovery.
@@ -217,3 +229,4 @@ public sealed partial class QualityCoordinator(IStateStore store,
     private T Save<T>(string plan, string kind, string id, T value) =>
         store.PutArtifact(plan, kind, id, value).Data;
 }
+

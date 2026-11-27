@@ -37,7 +37,18 @@ public sealed partial class OrchestratorHost
             IsCancelled(plan), Store.Artifacts<DispatchRecord>(plan, "dispatch"),
             Store.Artifacts<ReviewReport>(plan, "review"),
             Store.Artifacts<IntegratedChange>(plan, "integration"), events,
-            Store.Artifacts<QualityFailure>(plan, "quality-failure"), metrics);
+            Store.Artifacts<QualityFailure>(plan, "quality-failure"), metrics,
+            PendingReviews(plan, status));
+    }
+
+    private IReadOnlyList<Artifact<string>> PendingReviews(string plan,
+        ExecutionStatus status)
+    {
+        var waiting = status.Attempts.Where(a =>
+            a.State == AttemptState.AwaitingVerification).Select(a => a.Id)
+            .ToHashSet(StringComparer.Ordinal);
+        return Store.Artifacts<string>(plan, "review-pending")
+            .Where(a => waiting.Contains(a.Id)).ToArray();
     }
 
     public string Export(string plan) =>
@@ -168,3 +179,5 @@ public sealed partial class OrchestratorHost
         }
     }
 }
+
+

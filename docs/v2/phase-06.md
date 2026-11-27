@@ -24,3 +24,5 @@ one. The original user checkout remains available throughout.
 The focused test projects are Pda.Repositories.Tests, Pda.Quality.Tests
 and Pda.Verification.Tests. Native MXC command tests require Windows and
 the Codex executable. They use no model calls or account credentials.
+
+For high-risk tasks see [independent specialist decisions](specialist-review.md).

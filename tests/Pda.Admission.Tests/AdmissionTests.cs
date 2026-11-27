@@ -145,5 +145,14 @@ public sealed class AdmissionTests : IDisposable
         Assert.Null(Reserve(service, "one"));
     }
 
+    [Fact]
+    public void LiveWorkerRequiresPositiveTokenReservation()
+    {
+        Plan("one", Task("live", tokens: 0) with {Runtime = "codex"});
+        Assert.Null(Reserve(Service(), "one"));
+        Assert.Empty(Store.Attempts("one"));
+    }
+
     public void Dispose() => Directory.Delete(root, true);
 }
+

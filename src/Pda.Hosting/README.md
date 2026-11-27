@@ -70,3 +70,7 @@ The runtime repeats its confinement and authentication checks during dispatch.
 Only an authenticated live session establishes account readiness
 and model access. Verification commands use the native sandbox and require no
 model session. Grant SDK or cache reads only where the task needs them.
+
+Live Codex admission requires a positive token reservation. The reservation
+controls local admission. For a hard billing ceiling, configure an
+enforced provider-side spending limit before enabling paid workers.
