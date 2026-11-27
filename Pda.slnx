@@ -8,10 +8,12 @@
     <Project Path="src/Pda.Persistence/Pda.Persistence.csproj" />
     <Project Path="src/Pda.Planning/Pda.Planning.csproj" />
     <Project Path="src/Pda.Providers/Pda.Providers.csproj" />
+    <Project Path="src/Pda.Quality/Pda.Quality.csproj" />
     <Project Path="src/Pda.Recovery/Pda.Recovery.csproj" />
     <Project Path="src/Pda.Repositories/Pda.Repositories.csproj" />
     <Project Path="src/Pda.Scheduling/Pda.Scheduling.csproj" />
     <Project Path="src/Pda.Security/Pda.Security.csproj" />
+    <Project Path="src/Pda.Verification/Pda.Verification.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Pda.Admission.Tests/Pda.Admission.Tests.csproj" />
@@ -22,9 +24,11 @@
     <Project Path="tests/Pda.Persistence.Tests/Pda.Persistence.Tests.csproj" />
     <Project Path="tests/Pda.Planning.Tests/Pda.Planning.Tests.csproj" />
     <Project Path="tests/Pda.Providers.Tests/Pda.Providers.Tests.csproj" />
+    <Project Path="tests/Pda.Quality.Tests/Pda.Quality.Tests.csproj" />
     <Project Path="tests/Pda.Recovery.Tests/Pda.Recovery.Tests.csproj" />
     <Project Path="tests/Pda.Repositories.Tests/Pda.Repositories.Tests.csproj" />
     <Project Path="tests/Pda.Scheduling.Tests/Pda.Scheduling.Tests.csproj" />
     <Project Path="tests/Pda.Security.Tests/Pda.Security.Tests.csproj" />
+    <Project Path="tests/Pda.Verification.Tests/Pda.Verification.Tests.csproj" />
   </Folder>
 </Solution>
