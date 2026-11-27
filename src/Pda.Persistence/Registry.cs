@@ -87,14 +87,23 @@ public sealed partial class StateStore
     public Artifact<T> PutArtifact<T>(string plan, string kind, string id,
         T data, long expectedVersion = 0)
     {
+        using var db = database.Open();
+        using var tx = db.BeginTransaction(deferred: false);
+        var artifact = WriteArtifact(db, tx, plan, kind, id, data, expectedVersion);
+        tx.Commit();
+        return artifact;
+    }
+
+    private static Artifact<T> WriteArtifact<T>(SqliteConnection db,
+        SqliteTransaction tx, string plan, string kind, string id, T data,
+        long expectedVersion)
+    {
         ContractValidator.ValidateId(kind);
         ContractValidator.ValidateId(id);
         ArgumentOutOfRangeException.ThrowIfNegative(expectedVersion);
         var payload = kind == IWorkerIdentity.ArtifactKind && data != null
             ? JsonSerializer.SerializeToElement(data, data.GetType())
             : JsonSerializer.SerializeToElement(data);
-        using var db = database.Open();
-        using var tx = db.BeginTransaction(deferred: false);
         var version = db.Number("""
             SELECT coalesce(max(version),0) FROM artifacts
             WHERE plan=$p0 AND kind=$p1 AND id=$p2
@@ -116,7 +125,7 @@ public sealed partial class StateStore
         Append(db, tx, plan, null, null, "ArtifactStored",
             JsonSerializer.Serialize(new { kind, artifact = new Artifact<JsonElement>(
                 id, payload, artifact.Version) }));
-        tx.Commit();
+
         return artifact;
     }
 

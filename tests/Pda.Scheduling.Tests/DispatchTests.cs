@@ -1,5 +1,8 @@
 using System.Diagnostics;
 using Pda.Agents;
+using Pda.Admission;
+using Pda.Providers;
+using Pda.Security;
 using Pda.Core;
 using Pda.Persistence;
 using Pda.Repositories;
@@ -93,6 +96,61 @@ public sealed class DispatchTests : IDisposable
             .Where(e => e.Kind == "ArtifactStored")
             .Select(e => System.Text.Json.JsonDocument.Parse(e.Payload)
                 .RootElement.GetProperty("kind").GetString()).Last());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NativePreflightReleasesBudgetAndAllowsExplicitRetry(bool deny)
+    {
+        var live = task with { Id = "live", Runtime = "codex", MaxAttempts = 2 };
+        store.CreatePlan("test", baseline.Repository.Root, "paid", [live], 50);
+        var home = Directory.CreateDirectory(Path.Combine(root, "home")).FullName;
+        var missing = Path.Combine(root, "missing-codex.exe");
+        var policyDenied = deny && OperatingSystem.IsWindows();
+        if (policyDenied) File.WriteAllText(Path.Combine(home, "config.toml"), "");
+        var executable = policyDenied
+            ? Path.Combine(Environment.SystemDirectory, "cmd.exe") : missing;
+        var runtime = new CodexRuntime(new CodexProfile(executable, home));
+        var trees = Directory.CreateDirectory(Path.Combine(root, "trees")).FullName;
+        var logs = Directory.CreateDirectory(Path.Combine(root, "logs")).FullName;
+        var config = Path.Combine(root, "models.json");
+        File.WriteAllText(config, """
+            {"providers":[{"id":"p","endpoint":"https://example.com",
+            "maxConcurrentRequests":2,"requestsPerMinute":60,"tokensPerMinute":1000}],
+            "models":[{"id":"m","providerId":"p","runtimeIds":["codex","simulated"],
+            "contextTokens":100,"maxOutputTokens":10}]}
+            """);
+        var admission = new AdmissionService(store,
+            ProviderRegistry.Load(config, ["codex", "simulated"]),
+            () => new(2, 2, 8L << 30, 100));
+        DispatchAssignment? Reserve(string plan)
+        {
+            var r = admission.ReserveNext(plan, _ => "m");
+            return r == null ? null : new(r.Contract, r.Attempt, r.Model.Model.Id);
+        }
+        var coordinator = new ExecutionCoordinator(store, _ => runtime, Reserve,
+            _ => baseline, trees, logs);
+        var failed = await coordinator.RunNextAsync("paid");
+        Assert.Equal(policyDenied ? AttemptState.Blocked : AttemptState.Failed,
+            failed!.State);
+        Assert.Equal(0, failed.UsedTokens);
+        var r = store.Artifacts<RuntimeResult>("paid", "result").Single().Data;
+        Assert.Equal(policyDenied ? RuntimeError.PolicyDenied : RuntimeError.Unavailable,
+            r.Error);
+        Assert.True(r.PreflightRejected);
+        Assert.Null(r.Process);
+        Assert.Empty(store.Artifacts<object>("paid", "worker"));
+        Assert.Equal(!policyDenied, store.History("paid").Any(e =>
+            e.Kind == "Reconciled"));
+        using (store.AcquireStartupGuard())
+            Assert.NotNull(admission.ReserveNext("plan", _ => "m"));
+        if (policyDenied)
+            Assert.Throws<InvalidOperationException>(() => store.AuthorizeRetry(
+                failed.Id, failed.Version, "Policy still blocks this attempt"));
+        else
+            Assert.Equal(AttemptState.RetryAuthorized, store.AuthorizeRetry(
+                failed.Id, failed.Version, "Corrected native runtime").State);
     }
 
     private ExecutionCoordinator Coordinator(IAgentRuntime runtime)

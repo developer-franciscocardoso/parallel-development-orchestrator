@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/Pda.Admission/Pda.Admission.csproj" />
     <ProjectReference Include="..\..\src\Pda.Scheduling\Pda.Scheduling.csproj" />
     <ProjectReference Include="..\..\src\Pda.Persistence\Pda.Persistence.csproj" />
   </ItemGroup>

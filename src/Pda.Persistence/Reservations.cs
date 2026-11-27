@@ -77,6 +77,40 @@ public sealed partial class StateStore
         return !siblings.Any(s => ContractValidator.Conflicts(task, s));
     }
 
+    // No model request was submitted. Commit the evidence, release the
+    // reservation and establish retry eligibility in one transaction.
+    public Attempt RejectPreflight<T>(string attemptId, long expectedVersion,
+        T result, string detail, bool policyDenied)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+        using var db = database.Open();
+        using var tx = db.BeginTransaction(deferred: false);
+        var current = db.Read(Fields + "WHERE id=$p0", Map, tx, attemptId).Single();
+        if (current.Version != expectedVersion ||
+            current.State != AttemptState.Reserved || current.UsedTokens != null ||
+            db.Number("""
+                SELECT count(*) FROM artifacts WHERE plan=$p0 AND id=$p1
+                AND kind IN ('worker','simulation')
+                """, tx, current.PlanId, attemptId) != 0)
+            throw new InvalidOperationException("Preflight launch state changed.");
+        var state = policyDenied ? AttemptState.Blocked : AttemptState.Failed;
+        var updated = current with { State = state, UsedTokens = 0,
+            Version = current.Version + 1 };
+        WriteArtifact(db, tx, current.PlanId, "result", attemptId, result, 0);
+        db.Execute("""
+            UPDATE attempts SET state=$p0,version=$p1,used=0 WHERE id=$p2
+            """, tx, state.ToString(), updated.Version, attemptId);
+        var evidence = JsonSerializer.Serialize(new { updated, detail,
+            modelStarted = false, measuredTokens = 0 });
+        Append(db, tx, current.PlanId, current.TaskId, attemptId,
+            state.ToString(), evidence);
+        if (!policyDenied)
+            Append(db, tx, current.PlanId, current.TaskId, attemptId,
+                "Reconciled", evidence);
+        tx.Commit();
+        return updated;
+    }
+
     public Attempt Transition(string attemptId, long expectedVersion,
         AttemptState state, string evidence, long? usedTokens = null)
     {
