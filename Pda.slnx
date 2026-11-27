@@ -26,6 +26,7 @@
     <Project Path="tests/Pda.Core.Tests/Pda.Core.Tests.csproj" />
     <Project Path="tests/Pda.Dashboard.Tests/Pda.Dashboard.Tests.csproj" />
     <Project Path="tests/Pda.Execution.Tests/Pda.Execution.Tests.csproj" />
+    <Project Path="tests/Pda.Hosting.Tests/Pda.Hosting.Tests.csproj" />
     <Project Path="tests/Pda.Persistence.Tests/Pda.Persistence.Tests.csproj" />
     <Project Path="tests/Pda.Planning.Tests/Pda.Planning.Tests.csproj" />
     <Project Path="tests/Pda.Providers.Tests/Pda.Providers.Tests.csproj" />
