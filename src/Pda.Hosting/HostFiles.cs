@@ -104,6 +104,10 @@ internal static class HostFiles
         string runtimeHome = config.CodexHome ?? Path.Combine(home, "codex-home");
         var profile = new CodexProfile(executable, DirectoryAt(runtimeHome),
             config.ToolDirectories, config.ReadOnlyDirectories);
+        var user = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (TrustedPaths.Equal(profile.Home, user) ||
+            TrustedPaths.Equal(profile.Home, Path.Combine(user, ".codex")))
+            throw new InvalidDataException("A dedicated Codex home is required.");
         TrustedPaths.OutsideRepository(profile.Home);
         TrustedPaths.Disjoint(profile.Home, Path.Combine(home, "worktrees"));
         TrustedPaths.Disjoint(profile.Home, Path.Combine(home, "evidence"));

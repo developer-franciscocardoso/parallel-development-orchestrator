@@ -52,7 +52,13 @@ public sealed partial class OrchestratorHost
         };
         if (Settings.EnableLiveCodex)
         {
-            Providers.Resolve("codex", Settings.CodexModel!);
+            var selected = Providers.Resolve("codex", Settings.CodexModel!);
+            if (selected.Provider.Id != "openai" ||
+                selected.Provider.CredentialEnvironmentVariable != null)
+                throw new InvalidDataException(
+                    "Live Codex requires the OpenAI provider and isolated login.");
+            profile = profile! with { OpenAiEndpoint = selected.Provider.Endpoint };
+            CodexPolicy.ProviderOptions(profile);
             runtimes.Add("codex", new CodexRuntime(profile!));
         }
         var admission = new AdmissionService(Store, Providers);

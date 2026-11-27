@@ -139,10 +139,18 @@ public sealed partial class OrchestratorHost
 
     private IDisposable ControlGuard()
     {
+        // A native worker can spend time in discovery while holding its startup
+        // lock. Stop requests must reach its cancellation monitor immediately.
+        var path = Path.Combine(Home, "controls.lock");
+        if (Path.Exists(path)) Pda.Security.TrustedPaths.File(path);
         var started = Stopwatch.StartNew();
         while (true)
         {
-            try { return Store.AcquireStartupGuard(); }
+            try
+            {
+                return new FileStream(path, FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite, FileShare.None);
+            }
             catch (IOException) when (started.Elapsed < TimeSpan.FromSeconds(10))
             {
                 Thread.Sleep(25);
