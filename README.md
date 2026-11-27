@@ -31,7 +31,9 @@ dotnet run --project src/Pda.Cli -c Release -- --help
 dotnet run --project src/Pda.Cli -c Release -- doctor --json
 ```
 
-Start with the [CLI and dashboard guide](docs/v2/cli-dashboard.md).
+Use the [Windows installation and rollback guide](docs/v2/installation.md)
+to install a published package. For source builds, start with the
+[CLI and dashboard guide](docs/v2/cli-dashboard.md).
 The [host settings](src/Pda.Hosting/README.md) describe local simulation
 and the dedicated Codex runtime. [State commands](docs/v2/state-commands.md)
 cover legacy import, backup and restore.

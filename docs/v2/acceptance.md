@@ -30,6 +30,16 @@
 | Performance | The three-iteration CLI command measured warm API, native startup, state changes, scheduling, worker overlap and integration. The quality-and-merge observation had one sample. [Raw results](benchmark-results.json) |
 | Legacy compatibility | The original scripts, archived skill and execution fixtures match the audited baseline. V2 uses separate state. [Migration audit](audit.md) |
 
+## Packaging and upgrade
+
+The self-contained Windows x64 distribution includes the CLI, dashboard,
+SQLite runtime and worker report schema. The bootstrap checks an externally
+supplied archive digest and the package manifest before installing.
+A stable launcher selects the active version. Two real release builds
+passed fresh installation, upgrade and rollback, retaining the registered
+Git baseline. The rolled-back executable served the authenticated dashboard.
+[Installation and release smoke evidence](installation.md)
+
 ## Operating limits
 
 A configured dedicated profile is required for authenticated model calls.
@@ -48,3 +58,4 @@ candidate-bound and require independently trusted reviewer keys. The
 operator is responsible for authenticating reviewers and protecting
 those keys. Hardware, repository size, available tooling and the tasks
 being executed affect observed timings.
+
