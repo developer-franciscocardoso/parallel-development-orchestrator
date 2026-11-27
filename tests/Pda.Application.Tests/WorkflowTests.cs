@@ -12,7 +12,12 @@ public sealed class WorkflowTests : IDisposable
     private readonly string root = Directory.CreateTempSubdirectory().FullName;
 
     [Fact]
-    public async Task DiscoveredPlanDispatchesIntoDedicatedGitTree()
+    public Task DispatchesIntoDedicatedGitTree() => Exercise(false);
+
+    [NativeSandboxFact]
+    public Task IntegratesAfterRealSandboxChecks() => Exercise(true);
+
+    private async Task Exercise(bool integrate)
     {
         string Folder(string name) =>
             Directory.CreateDirectory(Path.Combine(root, name)).FullName;
@@ -26,7 +31,10 @@ public sealed class WorkflowTests : IDisposable
         var planning = new PlanningService(store);
         planning.InspectAndRegister("project", repo);
         planning.Generate("project", "plan", "Update greeting", ["hello.cs"],
-            "simulated", 30, [new("test", [])]);
+            "simulated", 30, [new(Path.Combine(Environment.SystemDirectory,
+                @"WindowsPowerShell\v1.0\powershell.exe"),
+                ["-NoProfile", "-Command",
+                 "if ((Get-Content -Raw hello.cs) -ne '// new') {exit 1}"])]);
         var path = Path.Combine(root, "providers.json");
         File.WriteAllText(path, """
             {"providers":[{"id":"fixture","endpoint":"https://example.com",
@@ -55,6 +63,20 @@ public sealed class WorkflowTests : IDisposable
         Assert.Equal("// new", File.ReadAllText(
             Path.Combine(record.Worktree.Path, "hello.cs")));
         Assert.NotEqual(repo, record.Worktree.Baseline.Repository.Root);
+        if (!integrate) return;
+        var exe = NativeSandboxFactAttribute.Executable;
+        var git = new Pda.Repositories.GitRepositoryService();
+        var quality = new Pda.Quality.QualityCoordinator(store,
+            new(git.CaptureCandidate, git.PrepareMerge, git.AdvancePlan),
+            new Pda.Verification.SandboxedVerificationRunner(new(exe!, Folder("home"))),
+            new Pda.Verification.MechanicalReviewer(), evidence);
+        var outcome = await new PlanExecution(store, workers, quality.ProcessAsync)
+            .ExecuteAsync("plan", 2);
+        Assert.True(outcome.Complete, string.Join(" ", store.History("plan")
+            .TakeLast(3).Select(e => e.Payload)));
+        Assert.Equal("// initial", File.ReadAllText(Path.Combine(repo, "hello.cs")));
+        Assert.Equal("// new", File.ReadAllText(Path.Combine(
+            record.Worktree.Baseline.Repository.Root, "hello.cs")));
     }
 
     private static void Git(string directory, params string[] args)
@@ -75,3 +97,20 @@ public sealed class WorkflowTests : IDisposable
         Directory.Delete(root, true);
     }
 }
+
+
+public sealed class NativeSandboxFactAttribute : FactAttribute
+{
+    internal static string? Executable =>
+        Environment.GetEnvironmentVariable("PDA_CODEX_EXE") ??
+        (Environment.GetEnvironmentVariable("PATH") ?? "")
+        .Split(Path.PathSeparator).Where(Path.IsPathFullyQualified)
+        .Select(p => Path.Combine(p, "codex.exe")).FirstOrDefault(File.Exists);
+
+    public NativeSandboxFactAttribute()
+    {
+        if (!OperatingSystem.IsWindows() || !File.Exists(Executable))
+            Skip = "Requires Windows and native Codex MXC.";
+    }
+}
+
