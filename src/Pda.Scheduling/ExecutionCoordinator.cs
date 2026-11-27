@@ -43,7 +43,7 @@ public sealed partial class ExecutionCoordinator(IStateStore store,
             var record = Prepare(assignment);
             var request = new AgentRequest(task.Id, attempt.Id,
                 record.Worktree.Path, record.OutputPath, record.ErrorPath,
-                record.ReportPath, JsonSerializer.Serialize(task),
+                record.ReportPath, WorkerPrompt(task),
                 TimeSpan.FromSeconds(task.TimeoutSeconds), assignment.Model);
 
             void Running()
@@ -138,6 +138,13 @@ public sealed partial class ExecutionCoordinator(IStateStore store,
         return record;
     }
 
+    private static string WorkerPrompt(TaskContract task) =>
+        "Work only within the task contract. Leave only deliverable edits. " +
+        "Keep temporary build output out of the submitted worktree. " +
+        "Return completed edits even if the commit field is empty. " +
+        "The coordinator inspects, commits, and verifies the actual changes.\n" +
+        JsonSerializer.Serialize(task);
+
     private static string TaskSegment(string id)
     {
         if (id.Length <= 48 && id.All(c => char.IsAsciiLetterOrDigit(c) ||
@@ -199,4 +206,5 @@ public sealed partial class ExecutionCoordinator(IStateStore store,
             result.Detail, usage);
     }
 }
+
 
