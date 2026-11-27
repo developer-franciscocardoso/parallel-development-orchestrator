@@ -121,9 +121,13 @@ internal sealed partial class BenchFixture
         var check = store.Artifacts<CheckReport>("single", "check").Single().Data;
         var review = store.Artifacts<ReviewReport>("single", "review").Single().Data;
         var result = store.Artifacts<IntegratedChange>("single", "integration").Single().Data;
+        var regression = store.Artifacts<CheckReport>("single", "regression").Single().Data;
         data.Record("invariant.unverifiedIntegrations",
             check.Passed && review.Approved && check.Binding == review.Binding &&
-            check.Binding.CandidateCommit == result.CandidateCommit ? 0 : 1);
+            check.Binding.CandidateCommit == result.CandidateCommit &&
+            regression.Passed && regression.Binding.CandidateCommit == result.Commit &&
+            regression.Binding.BaseCommit == result.PreviousHead &&
+            regression.Binding.ContractDigest == review.Binding.ContractDigest ? 0 : 1);
         return true;
     }
 }
