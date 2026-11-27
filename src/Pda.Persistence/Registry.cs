@@ -74,9 +74,14 @@ public sealed partial class StateStore
     public IReadOnlyList<PlanInfo> Plans()
     {
         using var db = database.Open();
-        return db.Read("SELECT id,project,budget FROM plans ORDER BY id",
-            r => new PlanInfo(r.GetString(0), r.GetString(1), r.GetInt64(2)),
-            null);
+        return db.Read("""
+            SELECT p.id,p.project,p.budget,b.version,s.commit_sha
+            FROM plans p LEFT JOIN plan_profiles b ON b.plan=p.id
+            LEFT JOIN project_profiles s ON s.project=b.project AND s.version=b.version
+            ORDER BY p.id
+            """, r => new PlanInfo(r.GetString(0), r.GetString(1), r.GetInt64(2),
+                r.IsDBNull(3) ? null : r.GetInt64(3),
+                r.IsDBNull(4) ? null : r.GetString(4)), null);
     }
 
     public Artifact<T> PutArtifact<T>(string plan, string kind, string id,
