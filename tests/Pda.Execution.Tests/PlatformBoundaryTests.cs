@@ -12,8 +12,10 @@ public sealed class PlatformBoundaryTests
         var stdout = Path.Combine(dir.FullName, "out");
         var stderr = Path.Combine(dir.FullName, "err");
         var request = new ProcessRequest(windows ?
-            Path.Combine(Environment.SystemDirectory, "cmd.exe") : "/bin/true",
-            windows ? ["/d", "/c", "exit 0"] : [], dir.FullName, stdout,
+            Path.Combine(Environment.SystemDirectory,
+                @"WindowsPowerShell\v1.0\powershell.exe") : "/bin/true",
+            windows ? ["-NoProfile", "-NonInteractive", "-Command", "exit 0"]
+                : [], dir.FullName, stdout,
             stderr, TimeSpan.FromSeconds(20));
         using var supervisor = new ProcessSupervisor();
         var observed = false;
