@@ -21,12 +21,23 @@ execution data remain supported and are not rewritten by V2.
 dotnet test Pda.slnx -c Release
 ```
 
-The implemented foundation includes validated task contracts, transactional
-SQLite state and history, bounded reservations, backup/restore, legacy
-quarantine, Windows process-tree supervision, isolated Git worktrees,
-conservative recovery and a separate provider/model registry.
+The native CLI and local Blazor dashboard share SQLite state, task
+contracts, admission controls, worker supervision and recovery. Completed
+work is verified in an independent checkout before integration into a
+local plan branch.
 
-V2 is not yet a complete autonomous platform. Runtime integration and later
-phases are tracked in the [execution plan](docs/v2/implementation-plan.md).
-See the [audit](docs/v2/audit.md), [architecture](docs/v2/architecture.md),
-and individual phase reports for tested behavior and limitations.
+```powershell
+dotnet run --project src/Pda.Cli -c Release -- --help
+dotnet run --project src/Pda.Cli -c Release -- doctor --json
+```
+
+Start with the [CLI and dashboard guide](docs/v2/cli-dashboard.md).
+The [host settings](src/Pda.Hosting/README.md) describe local simulation
+and the dedicated Codex runtime. [State commands](docs/v2/state-commands.md)
+cover legacy import, backup and restore.
+
+The [execution plan](docs/v2/implementation-plan.md) records tested phases
+and outstanding work. The [audit](docs/v2/audit.md),
+[architecture](docs/v2/architecture.md) and
+[verification guide](docs/v2/phase-06.md) describe the compatibility and
+security boundaries.
