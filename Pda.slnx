@@ -16,6 +16,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/Pda.Admission.Tests/Pda.Admission.Tests.csproj" />
     <Project Path="tests/Pda.Agents.Tests/Pda.Agents.Tests.csproj" />
+    <Project Path="tests/Pda.Application.Tests/Pda.Application.Tests.csproj" />
     <Project Path="tests/Pda.Core.Tests/Pda.Core.Tests.csproj" />
     <Project Path="tests/Pda.Execution.Tests/Pda.Execution.Tests.csproj" />
     <Project Path="tests/Pda.Persistence.Tests/Pda.Persistence.Tests.csproj" />

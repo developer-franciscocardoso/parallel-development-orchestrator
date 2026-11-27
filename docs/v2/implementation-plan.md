@@ -96,3 +96,7 @@ These interfaces are sequential prerequisites, not parallel guesses.
   supervisor termination. The isolated Codex profile needs authentication
   before a paid end-to-end run can be verified.
 - P04 accepted at 6e3fc82. All 122 integrated Release tests passed on Windows.
+- P05 accepted at cf59794. All 147 integrated Release tests passed.
+  The composed application library built with zero warnings. Native Windows
+  counters drive admission. Provider rate limits measure admitted workers
+  and token reservations. Intra-turn provider requests are opaque.
