@@ -1,10 +1,8 @@
 # Independent specialist decisions
 
-The default reviewer checks the committed diff mechanically. To require
-authenticated specialist decisions for high-risk tasks or an explicit
-specialist approval criterion, create `specialist-reviews` under the
-trusted state home before opening the host. The folder is outside every
-managed checkout. Install administrator-approved ECDSA public keys named
+The host checks every candidate mechanically. High-risk tasks and explicit
+specialist approval criteria also require signed decisions. The host
+creates a trusted `specialist-reviews` folder outside all worktrees. Install administrator-approved ECDSA public keys named
 `architecture.pem`, `correctness.pem`, `security.pem`, `performance.pem`
 and `maintainability.pem`. Each file is a PEM SubjectPublicKeyInfo. Keep
 the private signing keys with their respective reviewers.
@@ -44,3 +42,4 @@ specialist directory is configured. A rejected, altered or mismatched
 decision blocks the attempt. Mechanical scope and integrity checks still
 apply before specialist review. Changing the candidate or contract
 requires fresh decisions.
+

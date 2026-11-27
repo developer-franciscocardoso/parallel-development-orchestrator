@@ -75,6 +75,7 @@ public sealed class AdmissionService(IStateStore store,
         {
             if (previous[task.Id].Any(e =>
                 e.Attempt.State != AttemptState.RetryAuthorized)) continue;
+            if (task.Runtime == "codex" && task.TokenReservation == 0) continue;
             if (modelFor(plan, task) is not { } id) continue;
             var model = providers.Resolve(task.Runtime, id);
             if (!CanAfford(ledger, model, task.TokenReservation, now)) continue;
@@ -120,3 +121,4 @@ public sealed class AdmissionService(IStateStore store,
         return tokens <= remaining;
     }
 }
+
