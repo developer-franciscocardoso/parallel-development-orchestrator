@@ -55,4 +55,3 @@ preserve the orchestrator configuration, worktree registrations, Git
 repositories and execution evidence at the recorded locations. After
 restoring them, inspect affected plans with `execution status PLAN` and run
 `execution recover PLAN` to reconcile worker state.
-

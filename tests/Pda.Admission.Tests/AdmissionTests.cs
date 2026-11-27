@@ -155,4 +155,3 @@ public sealed class AdmissionTests : IDisposable
 
     public void Dispose() => Directory.Delete(root, true);
 }
-

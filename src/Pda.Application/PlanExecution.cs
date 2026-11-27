@@ -45,4 +45,3 @@ public sealed class PlanExecution(IStateStore store, ExecutionCoordinator worker
             status);
     }
 }
-

@@ -121,4 +121,3 @@ public sealed class AdmissionService(IStateStore store,
         return tokens <= remaining;
     }
 }
-

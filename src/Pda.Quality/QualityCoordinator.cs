@@ -229,4 +229,3 @@ public sealed partial class QualityCoordinator(IStateStore store,
     private T Save<T>(string plan, string kind, string id, T value) =>
         store.PutArtifact(plan, kind, id, value).Data;
 }
-

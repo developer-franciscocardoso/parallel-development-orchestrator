@@ -206,5 +206,3 @@ public sealed partial class ExecutionCoordinator(IStateStore store,
             result.Detail, usage);
     }
 }
-
-

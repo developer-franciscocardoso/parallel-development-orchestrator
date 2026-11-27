@@ -123,4 +123,3 @@ public sealed class DispatchTests : IDisposable
         Directory.Delete(root, true);
     }
 }
-

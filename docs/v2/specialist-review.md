@@ -42,4 +42,3 @@ specialist directory is configured. A rejected, altered or mismatched
 decision blocks the attempt. Mechanical scope and integrity checks still
 apply before specialist review. Changing the candidate or contract
 requires fresh decisions.
-

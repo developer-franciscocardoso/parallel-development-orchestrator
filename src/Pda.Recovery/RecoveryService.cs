@@ -91,4 +91,3 @@ public sealed class RecoveryService(IStateStore store,
             measuredTokens, confirmedStopped: true);
     }
 }
-

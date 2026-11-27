@@ -22,4 +22,3 @@ public sealed record HostSettings(int DefaultConcurrency = 2,
     bool EnableLiveCodex = false, string? CodexExecutable = null,
     string? CodexHome = null, string? CodexModel = null,
     string[]? ToolDirectories = null, string[]? ReadOnlyDirectories = null);
-
