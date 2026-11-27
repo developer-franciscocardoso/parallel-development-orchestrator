@@ -3,7 +3,9 @@
     <Project Path="src/Pda.Admission/Pda.Admission.csproj" />
     <Project Path="src/Pda.Agents/Pda.Agents.csproj" />
     <Project Path="src/Pda.Application/Pda.Application.csproj" />
+    <Project Path="src/Pda.Cli/Pda.Cli.csproj" />
     <Project Path="src/Pda.Core/Pda.Core.csproj" />
+    <Project Path="src/Pda.Dashboard/Pda.Dashboard.csproj" />
     <Project Path="src/Pda.Execution/Pda.Execution.csproj" />
     <Project Path="src/Pda.Hosting/Pda.Hosting.csproj" />
     <Project Path="src/Pda.Persistence/Pda.Persistence.csproj" />
@@ -20,7 +22,9 @@
     <Project Path="tests/Pda.Admission.Tests/Pda.Admission.Tests.csproj" />
     <Project Path="tests/Pda.Agents.Tests/Pda.Agents.Tests.csproj" />
     <Project Path="tests/Pda.Application.Tests/Pda.Application.Tests.csproj" />
+    <Project Path="tests/Pda.Cli.Tests/Pda.Cli.Tests.csproj" />
     <Project Path="tests/Pda.Core.Tests/Pda.Core.Tests.csproj" />
+    <Project Path="tests/Pda.Dashboard.Tests/Pda.Dashboard.Tests.csproj" />
     <Project Path="tests/Pda.Execution.Tests/Pda.Execution.Tests.csproj" />
     <Project Path="tests/Pda.Persistence.Tests/Pda.Persistence.Tests.csproj" />
     <Project Path="tests/Pda.Planning.Tests/Pda.Planning.Tests.csproj" />
